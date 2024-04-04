@@ -49,7 +49,7 @@ class MplCanvas(FigureCanvasQTAgg):
     def line_select_callback(self, eclick, erelease):
         self.file.x1, self.file.y1= int(eclick.xdata), int(eclick.ydata)        
         self.file.x2, self.file.y2= int(erelease.xdata), int(erelease.ydata)
-
+        self.main_window.btn_calculate_OPL.setEnabled(True)
 
     def toggle_selector(self, event):
         if event.key in ['Q', 'q'] and self.RS.active:

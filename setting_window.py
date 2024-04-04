@@ -55,19 +55,22 @@ class SettingWindow(QWidget):
         layout.addWidget(self.btn_save_properties)
 
     def save_properties(self):
-        self.file.magnification = float(self.txt_magnification.text())
-        self.file.camera_increment = float(self.txt_camera_increment.text())
-        self.file.axial_step = float(self.txt_axial_step.text())
-        self.file.idx_background = int(self.txt_idx_background.text())
-        self.file.idx_sample = int(self.txt_idx_sample.text())
-        calc.calculate_background_sample_stack(self.file)
         self.close()
     
     def closeEvent(self, event):
         try:
-            if(self.file.magnification==-1): raise Exception('Please set the parameters right!')
-            self.main_window.show_raw_image()
-            self.main_window.lbl_focused_image.setText("Index focused image: "+str(self.file.idx_focused_image_calc))
+            self.file.magnification = float(self.txt_magnification.text())
+            self.file.camera_increment = float(self.txt_camera_increment.text())
+            self.file.axial_step = float(self.txt_axial_step.text())
+            self.file.idx_background = int(self.txt_idx_background.text())
+            self.file.idx_sample = int(self.txt_idx_sample.text())
+            
+            if self.file.file!=None:
+                if(self.file.magnification==-1 or self.file.axial_step==-1 or self.file.camera_increment==-1): raise Exception('Error: Unable to proceed. Please verify and adjust the parameter settings as needed.')
+                calc.calculate_background_sample_stack(self.file)
+                self.main_window.lbl_focused_image.setText("Index focused image: "+str(self.file.idx_focused_image))
+                self.main_window.btn_show_select_window.setDisabled(False)
+                self.main_window.show_raw_image()
+            self.close()
         except Exception as e:
-            event.ignore()
             self.main_window.error_message(e)

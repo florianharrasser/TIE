@@ -14,14 +14,11 @@ class SelectWindow(QWidget):
 
         self.file =file
         self.mc = MplCanvas(self, self.file, False, width=50, height=40, dpi=100)
-        self.idx_image = 0
-        self.len_sample=len_sample
-        # self.idx_focused_image_calc=idx_calc
+        self.len_sample=len_sample-1
         self.main_window=main_window
 
         self.page_layout = QGridLayout()
         self.setLayout(self.page_layout)
-        
 
         self.lbl_focused_image_calc=QLabel("Calculated focused image: " +str(self.file.idx_focused_image_calc))
         self.page_layout.addWidget(self.lbl_focused_image_calc, 0, 0, alignment=Qt.AlignmentFlag.AlignCenter)
@@ -37,6 +34,7 @@ class SelectWindow(QWidget):
         self.sld_select_image.setOrientation(Qt.Orientation.Vertical)
         self.sld_select_image.setMinimum(0)
         self.sld_select_image.setMaximum(self.len_sample)
+        self.sld_select_image.setValue(self.file.idx_focused_image)
         self.sld_select_image.valueChanged.connect(self.value_changed)
         self.page_layout.addWidget(self.sld_select_image,2, 1)
 

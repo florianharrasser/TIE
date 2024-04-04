@@ -4,7 +4,7 @@ class Daten():
     def __init__(self,  filename:str="", edges=None, sample: ndarray=[], drymass_ent:float = 0, drymass_contour:float=0,
                   magnification:float=-1, drymass_outer_mean:float=0, camera_increment:float=-1, axial_step:float=-1,
                   idx_background:int=3,   idx_sample:int=1, idx_focused_image:int = -1, idx_focused_image_calc=-1, x1:int=-1, y1:int=-1, x2:int=-1,
-                  y2:int=-1, OPL_idx_low:int=0, OPL_idx_high:int=0, alpha:float=0, OPL_mixed = None, opd_dry_mass=None, stack=None,
+                  y2:int=-1, OPL_idx_low:int=1, OPL_idx_high:int=1, alpha:float=0, OPL_mixed = None, opd_dry_mass=None, stack=None,
                   background=None, file=None, contours=[], hierarchy = [],
                   raw_image=None,contour_mask=None, contour_scaled=[], contour_outer_mean=[], selected_stack=None, drymass_ent_mean=0):
         
