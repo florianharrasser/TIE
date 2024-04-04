@@ -46,6 +46,21 @@ class SettingWindow(QWidget):
         self.txt_idx_background.setText(str(self.file.idx_background))
         layout.addWidget(self.txt_idx_background)
 
+        layout.addWidget(QLabel(text = "alpha [m^3/g]:"))
+        self.txt_alpha = QLineEdit()
+        self.txt_alpha.setText(str(self.file.alpha))
+        layout.addWidget(self.txt_alpha)
+
+        layout.addWidget(QLabel(text = "lbda_TV"))
+        self.txt_lbda_TV = QLineEdit()
+        self.txt_lbda_TV.setText(str(self.file.lbda_TV))
+        layout.addWidget(self.txt_lbda_TV)
+
+        layout.addWidget(QLabel(text = "Iterations:"))
+        self.txt_iteration = QLineEdit()
+        self.txt_iteration.setText(str(self.file.iteration))
+        layout.addWidget(self.txt_iteration)
+
         if(self.file.idx_focused_image!=-1): 
             self.lbl_idx_focused_image=QLabel("Index of focused image: "+str(self.file.idx_focused_image))
             layout.addWidget(self.lbl_idx_focused_image)
@@ -64,6 +79,9 @@ class SettingWindow(QWidget):
             self.file.axial_step = float(self.txt_axial_step.text())
             self.file.idx_background = int(self.txt_idx_background.text())
             self.file.idx_sample = int(self.txt_idx_sample.text())
+            self.file.alpha=float(self.txt_alpha.text())
+            self.file.lbda_TV=float(self.txt_lbda_TV.text())
+            self.file.iteration=int(self.txt_iteration.text())
             
             if self.file.file!=None:
                 if(self.file.magnification==-1 or self.file.axial_step==-1 or self.file.camera_increment==-1): raise Exception('Error: Unable to proceed. Please verify and adjust the parameter settings as needed.')

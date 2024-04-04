@@ -48,13 +48,14 @@ class Main(QMainWindow):
         self.btn_show_select_window.triggered.connect(self.show_select_window)
         self.toolBar.addAction(self.btn_show_select_window)
 
-        self.btn_show_setting_window = QAction("Settings")##############how can i controll it at the beginning
+        self.btn_show_setting_window = QAction("Settings")
         self.btn_show_setting_window.triggered.connect(self.show_setting_window)
         self.toolBar.addAction(self.btn_show_setting_window)
 
-        self.lbl_constant=QLabel("alpha [1^-7 m^3/g]:")
-        self.txt_constant=QLineEdit()
-        self.txt_constant.setText(str(1.90))
+        self.btn_calculate_mass=QPushButton("Calculate mass")
+        self.btn_calculate_mass.setDisabled(True)
+        self.btn_calculate_mass.clicked.connect(self.show_scaled_contours)
+
         self.lbl_OPL_low=QLabel("Index OPL low:")
         self.txt_OPL_low=QLineEdit()
         self.txt_OPL_low.setText(str(self.file.OPL_idx_low))
@@ -63,29 +64,36 @@ class Main(QMainWindow):
         self.txt_OPL_high.setText(str(self.file.OPL_idx_high))
         self.lbl_filename=QLabel("Current File: None")
         self.lbl_focused_image=QLabel("Index focused image: 0")
-        self.txt_constant.setFixedWidth(30)
         self.txt_OPL_high.setFixedWidth(30)
         self.txt_OPL_low.setFixedWidth(30)
         self.lbl_mass_total=QLabel("Mass total [ng]: 0")
         self.lbl_mass_inside=QLabel("Mass inside [ng]: 0")
         self.lbl_mass_outside=QLabel("Mass outside [ng]: 0")
 
-        self.page_layout.addWidget(self.lbl_constant,0,0,1,1)
-        self.page_layout.addWidget(self.txt_constant,0,1,1,1)
-        self.page_layout.addWidget(self.lbl_OPL_low,1,0,1,1)
-        self.page_layout.addWidget(self.txt_OPL_low,1,1,1,1)
-        self.page_layout.addWidget(self.lbl_OPL_high,2,0,1,1)               
-        self.page_layout.addWidget(self.txt_OPL_high,2,1,1,1)
-        self.page_layout.addWidget(self.lbl_filename,3,0,1,2, alignment=Qt.AlignmentFlag.AlignTop)
-        self.page_layout.addWidget(self.lbl_focused_image,3,0,1,2, alignment=Qt.AlignmentFlag.AlignVCenter)
-        self.page_layout.addWidget(self.lbl_mass_total,5,0,1,2, alignment=Qt.AlignmentFlag.AlignTop)
-        self.page_layout.addWidget(self.lbl_mass_inside,5,0,1,2, alignment=Qt.AlignmentFlag.AlignVCenter)
-        self.page_layout.addWidget(self.lbl_mass_outside,5,0,1,2, alignment=Qt.AlignmentFlag.AlignBottom)
+        self.page_layout.addWidget(self.lbl_OPL_low,2,0,1,1)
+        self.page_layout.addWidget(self.txt_OPL_low,2,1,1,1)
+        self.page_layout.addWidget(self.lbl_OPL_high,3,0,1,1)               
+        self.page_layout.addWidget(self.txt_OPL_high,3,1,1,1)
+
+        self.page_layout.addWidget(self.lbl_filename,0,0,1,2, alignment=Qt.AlignmentFlag.AlignTop)
+        self.page_layout.addWidget(self.lbl_focused_image,1,0,1,1, alignment=Qt.AlignmentFlag.AlignTop)
+        self.page_layout.addWidget(self.btn_calculate_mass,5,0,1,2)
+        self.page_layout.addWidget(self.lbl_mass_total,6,0,1,2)#, alignment=Qt.AlignmentFlag.AlignTop)
+        self.page_layout.addWidget(self.lbl_mass_inside,7,0,1,2)#, alignment=Qt.AlignmentFlag.AlignVCenter)
+        self.page_layout.addWidget(self.lbl_mass_outside,8,0,1,2)#, alignment=Qt.AlignmentFlag.AlignBottom)
+
+
 
         self.btn_calculate_OPL=QPushButton("Calculate OPL")
         self.btn_calculate_OPL.setDisabled(True)
         self.btn_calculate_OPL.clicked.connect(self.show_OPL_plot)
-        self.page_layout.addWidget(self.btn_calculate_OPL,4,0,1,2, alignment=Qt.AlignmentFlag.AlignCenter)
+        self.page_layout.addWidget(self.btn_calculate_OPL,4,1,1,1)#, alignment=Qt.AlignmentFlag.AlignRight)
+
+        self.btn_calculate_with_tvnorm=QPushButton("Calculate with TV Norm ")
+        self.btn_calculate_with_tvnorm.setFixedWidth(160)
+        self.btn_calculate_with_tvnorm.setDisabled(True)
+        self.btn_calculate_with_tvnorm.clicked.connect(self.show_OPL_plot_tv)
+        self.page_layout.addWidget(self.btn_calculate_with_tvnorm,4,0,1,1)#, alignment=Qt.AlignmentFlag.AlignLeft)
 
         self.page_layout.addWidget(self.mc1,0,2,7,1)
         self.page_layout.addWidget(self.mc2,0,3,7,1)
@@ -162,7 +170,7 @@ class Main(QMainWindow):
        
         self.sld_low_treshhold = QSlider()
         self.sld_low_treshhold.setOrientation(Qt.Orientation.Vertical)
-        self.sld_low_treshhold.setMinimum(1)
+        self.sld_low_treshhold.setMinimum(0)
         self.sld_low_treshhold.setMaximum(255)
         self.sld_low_treshhold.setDisabled(True)
         self.sld_low_treshhold.valueChanged.connect(self.canny_edge_detection)
@@ -183,7 +191,7 @@ class Main(QMainWindow):
 
         self.sld_high_treshhold = QSlider()
         self.sld_high_treshhold.setOrientation(Qt.Orientation.Vertical)
-        self.sld_high_treshhold.setMinimum(3)
+        self.sld_high_treshhold.setMinimum(1)
         self.sld_high_treshhold.setMaximum(255)
         self.sld_high_treshhold.setDisabled(True)
         self.sld_high_treshhold.valueChanged.connect(self.canny_edge_detection)
@@ -232,14 +240,6 @@ class Main(QMainWindow):
         try:
             path, _ = QFileDialog.getOpenFileName(self, "Open File", "", "LIF Files (*.lif)")
             
-            # if self.file.file!=None:
-            #     del self.file
-            #     self.file = Daten()
-            #     self.disable_all_buttons()
-            #     self.disable_all_slider()
-            #     self.btn_open_dialog.setEnabled(True)
-            #     self.btn_show_setting_window.setEnabled(True)
-
             if path: self.file.file=LifFile(path)            
             if self.file.file==None: raise Exception('Invalid input: No file selected. Please select a file.')
             
@@ -252,11 +252,12 @@ class Main(QMainWindow):
                 self.setting_window.lbl_status.setText("\n".join(lifProperties))
 
             self.setting_window.show()
-
+            #self.file.filename=""
             #extracting the filename from path
             for i in range (len(path)-5, -1, -1):
                 if(path[i] == '/'): 
                     break
+                
                 self.file.filename=self.file.filename+path[i]        
             self.file.filename = self.file.filename[::-1] #reversing the filename
             self.lbl_filename.setText("Current file: "+self.file.filename)
@@ -314,14 +315,15 @@ class Main(QMainWindow):
             self.page_layout.addWidget(self.mc1,0,2,7,1)   
             self.mc1.show_focused_image('Raw file',self.file, self.file.idx_focused_image)
 
-    def show_OPL_plot(self):
+    def _show_OPL_plot_default(self, mixing):
         try:
             self.set_to_startvalue()
-            if(int(self.txt_OPL_low.text())>int(self.txt_OPL_high.text())): raise Exception('Invalid input: The value of OPL-low cannot be greater than OPL-high. Please ensure that OPL-low is less than or equal to OPL-high.')
-            if(int(self.txt_OPL_low.text())==0 or int(self.txt_OPL_high.text())==0 or float(self.txt_constant.text())==0): raise Exception('Invalid input: The index (IDX) of OPL cannot be zero. Please provide a non-zero value for the index of OPL.')
+            if(int(self.txt_OPL_low.text())>int(self.txt_OPL_high.text())): 
+                raise Exception('Invalid input: The value of OPL-low cannot be greater than OPL-high. Please ensure that OPL-low is less than or equal to OPL-high.')
+            if(int(self.txt_OPL_low.text())==0 or int(self.txt_OPL_high.text())==0 or self.file.alpha==0): 
+                raise Exception('Invalid input: The index (IDX) of OPL cannot be zero. Please provide a non-zero value for the index of OPL.')
             self.file.OPL_idx_low, self.file.OPL_idx_high = int(self.txt_OPL_low.text()), int(self.txt_OPL_high.text())
-            self.file.alpha=float(self.txt_constant.text())*10e-7
-            calc.mixing(self.file)
+            mixing()
             calc.calculate_drymass_entire(self.file)
             self.canny_edge_detection()
             self.contour_detection()
@@ -331,6 +333,12 @@ class Main(QMainWindow):
             self.btn_save_file.setEnabled(True)
         except Exception as e:
             self.error_message(e)
+
+    def show_OPL_plot(self):
+        self._show_OPL_plot_default(lambda: calc.mixing(self.file))
+    
+    def show_OPL_plot_tv(self):
+        self._show_OPL_plot_default(lambda: calc.mixing_tv(self.file))
 
     def validate_input_for_calculation_drymass(self):
         return (self.txt_OPL_low.text()=='' or
@@ -362,8 +370,10 @@ class Main(QMainWindow):
             self.sld_scale.setValue(100)
             if(self.sld_find_contour.value()!=-1):
                 self.sld_scale.setEnabled(True)
+                self.btn_calculate_mass.setEnabled(True)
             else:
                 self.sld_scale.setDisabled(True)
+                self.btn_calculate_mass.setEnabled(True)
 
 
             self.layout().removeWidget(self.mc2)
@@ -465,7 +475,7 @@ class Main(QMainWindow):
         self.sld_find_contour.setValue(-1)
         self.sld_find_contour_tresh.setValue(1)
         self.sld_high_treshhold.setValue(1)
-        self.sld_low_treshhold.setValue(1)
+        self.sld_low_treshhold.setValue(0)
         self.sld_scale.setValue(100)
         self.sld_sigma.setValue(100)
         self.lbl_mass_total.setText("Mass total [ng]: 0")

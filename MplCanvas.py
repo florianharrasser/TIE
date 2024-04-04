@@ -50,6 +50,7 @@ class MplCanvas(FigureCanvasQTAgg):
         self.file.x1, self.file.y1= int(eclick.xdata), int(eclick.ydata)        
         self.file.x2, self.file.y2= int(erelease.xdata), int(erelease.ydata)
         self.main_window.btn_calculate_OPL.setEnabled(True)
+        self.main_window.btn_calculate_with_tvnorm.setEnabled(True)
 
     def toggle_selector(self, event):
         if event.key in ['Q', 'q'] and self.RS.active:

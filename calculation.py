@@ -102,7 +102,7 @@ def calculate_drymass_entire(file):
 
     sigma = OPD_dry_mass/file.alpha
     mass = np.sum(sigma)*file.camera_increment**2 #dry mass in gramm
-    #mass=np.round(mass/file.alpha*file.camera_increment**2, 5)
+
 
     file.drymass_ent= np.round(mass,5)
     file.drymass_ent_mean=np.round((outer_mean/file.alpha)*file.camera_increment**2 ,5)
@@ -116,6 +116,7 @@ def contour_detection(image, treshhold):
 
     file_contour = []
     file_hierarchy = []
+    # return contour, hierarchy
 
     for i, cont in enumerate(contour):
         if (cv2.contourArea(cont) > 100):
@@ -168,8 +169,8 @@ def contour_mass(file, contour):
             else:
                 mass_outside=mass_outside+(file.opd_dry_mass[j][i])
 
-    mass_inside=np.round(mass_inside/file.alpha*file.camera_increment**2, 5)
-    mass_outside=np.round(mass_outside/file.alpha*file.camera_increment**2, 5)
+    mass_inside=np.round((mass_inside/file.alpha)*file.camera_increment**2, 5)
+    mass_outside=np.round((mass_outside/file.alpha)*file.camera_increment**2, 5)
     return mass_inside, mass_outside
 
 def contour_mean(file, contour):
@@ -187,15 +188,42 @@ def contour_mean(file, contour):
         
         return np.round(outer_mean/file.alpha*file.camera_increment**2,5)
 
-def calculate_with_tvnotm(file):
+def calculate_with_tvnotm(file, m:int, bool):   
+        print("TVNORM START!")     
+        if bool:
+            file.selected_stack = file.stack[:,file.y1:file.y2,file.x1:file.x2].copy()
+            file.raw_image=file.sample[file.idx_focused_image][file.y1:file.y2,file.x1:file.x2].copy()
+
         n_img,nx,ny=file.selected_stack.shape
-        n1 = file.idx_focused_image + file.m1
-        n2 = file.idx_focused_image + file.m2
+        n1 = file.idx_focused_image - m
+        n2 = file.idx_focused_image + m
         I1 = file.selected_stack[n1]
         I2 = file.selected_stack[n2]
         dI_dz = -(I1 - I2)/np.abs(n2-n1)
         tm = TIE_ADMM(nx,ny)
-        lbda_TV = 1e-5
-        result = tm.solve_tie(dI_dz, maxiter=1000, lambda_tv=lbda_TV)
-        file.OPL = result *file.axial_step/file.camera_increment
-        file.OPL = file.OPL.astype(np.float32)
+        #file.lbda_TV = 1e-5
+        result = tm.solve_tie(dI_dz, maxiter=file.iteration, lambda_tv=file.lbda_TV)
+        return result*file.axial_step/file.camera_increment
+        #file.OPL = result #*file.axial_step/file.camera_increment
+        #file.OPL = file.OPL.astype(np.float32)
+
+def mixing_tv(file):
+    sigma=1
+    OPL_lo=calculate_with_tvnotm(file, file.OPL_idx_low, True)
+    OPL_hi=calculate_with_tvnotm(file, file.OPL_idx_high, False)
+
+    gaussian2D = lambda x, y, sigma: np.exp(-((x)**2/(2*sigma**2) + (y)**2/(2*sigma**2)))
+
+    Nx,Ny = OPL_lo.shape
+    x = np.arange(Nx) - np.floor(Nx/2)
+    y = np.arange(Ny) - np.floor(Ny/2)
+    Y,X = np.meshgrid(y,x)
+
+    LP_filt = np.fft.ifftshift(gaussian2D(X,Y,sigma))
+       
+    F_hi = np.fft.fft2(OPL_hi)
+    F_lo = np.fft.fft2(OPL_lo)
+
+    F_mix = LP_filt * F_lo + (1-LP_filt) * F_hi
+    
+    file.OPL_mixed = np.real(np.fft.ifft2(F_mix))

@@ -2,11 +2,11 @@ from numpy import ndarray
 
 class Daten():
     def __init__(self,  filename:str="", edges=None, sample: ndarray=[], drymass_ent:float = 0, drymass_contour:float=0,
-                  magnification:float=-1, drymass_outer_mean:float=0, camera_increment:float=-1, axial_step:float=-1,
-                  idx_background:int=3,   idx_sample:int=1, idx_focused_image:int = -1, idx_focused_image_calc=-1, x1:int=-1, y1:int=-1, x2:int=-1,
-                  y2:int=-1, OPL_idx_low:int=1, OPL_idx_high:int=1, alpha:float=0, OPL_mixed = None, opd_dry_mass=None, stack=None,
-                  background=None, file=None, contours=[], hierarchy = [],
-                  raw_image=None,contour_mask=None, contour_scaled=[], contour_outer_mean=[], selected_stack=None, drymass_ent_mean=0):
+                  magnification:float=60, drymass_outer_mean:float=0, camera_increment:float=104e-9, axial_step:float=1e-6,
+                  idx_background:int=3,   idx_sample:int=1, idx_focused_image:int = -1, idx_focused_image_calc=-1, 
+                  x1:int=-1, y1:int=-1, x2:int=-1, y2:int=-1, OPL_idx_low:int=1, OPL_idx_high:int=1, alpha:float=0.190 * 1e-6, 
+                  iteration:int=500, OPL_mixed = None, opd_dry_mass=None, stack=None, background=None, file=None, contours=[], hierarchy = [],
+                  raw_image=None,contour_mask=None, contour_scaled=[], contour_outer_mean=[], selected_stack=None, drymass_ent_mean=0, lbda_TV=1e-5):
         
         
         self.file = file
@@ -42,3 +42,5 @@ class Daten():
         self.alpha=alpha
         self.selected_stack=selected_stack
         self.drymass_ent_mean=drymass_ent_mean
+        self.lbda_TV=lbda_TV
+        self.iteration=iteration
