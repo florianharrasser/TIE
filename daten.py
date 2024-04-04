@@ -1,35 +1,44 @@
-from readlif.reader import LifFile
 from numpy import ndarray
 
 class Daten():
-    def __init__(self, sample: ndarray=[0], hierarchy: ndarray=[[]], file=None, path=None, magnification=60, 
-                 camera_increment=104e-9, axial_step=1e-6,
-                 idx_background=3, background=None,  idx_sample=1,  idx_focused_image = 0, OPL = None,
-                 x1=0, y1=0, x2=0, y2=0, opd_dry_mass=None, image =None, image_copy = None, stack=None):
+    def __init__(self,  filename:str="", edges=None, sample: ndarray=[], drymass_ent:float = 0, drymass_contour:float=0,
+                  magnification:float=-1, drymass_outer_mean:float=0, camera_increment:float=-1, axial_step:float=-1,
+                  idx_background:int=3,   idx_sample:int=1, idx_focused_image:int = -1, idx_focused_image_calc=-1, x1:int=-1, y1:int=-1, x2:int=-1,
+                  y2:int=-1, OPL_idx_low:int=0, OPL_idx_high:int=0, alpha:float=0, OPL_mixed = None, opd_dry_mass=None, stack=None,
+                  background=None, file=None, contours=[], hierarchy = [],
+                  raw_image=None,contour_mask=None, contour_scaled=[], contour_outer_mean=[], selected_stack=None, drymass_ent_mean=0):
         
-        #ausmisten welche informationen benötigt werden und welche nicht
+        
         self.file = file
-        self.path = path
+        self.filename =filename
         self.magnification = magnification
         self.camera_increment = camera_increment
         self.axial_step = axial_step
-        #self.m = m #change the use of the m
-        self.idx_background = idx_background #OK
-        self.background = background
-        self.idx_sample = idx_sample #OK
+        self.idx_background = idx_background
+        self.idx_sample = idx_sample
+        self.background = background        
         self.sample = sample
         self.idx_focused_image = idx_focused_image
-        self.OPL = OPL
+        self.idx_focused_image_calc=idx_focused_image_calc  
         self.x1=x1
         self.y1=y1
         self.x2=x2
         self.y2=y2
+        self.OPL_mixed = OPL_mixed
         self.opd_dry_mass = opd_dry_mass
-        self.image = image
-        self.image_copy = image_copy
         self.stack = stack
-
-
-    def loadFile(self, path):
-        if(path):
-            self.file = LifFile(path)    
+        self.OPL_idx_low=OPL_idx_low
+        self.OPL_idx_high=OPL_idx_high
+        self.drymass_ent=drymass_ent
+        self.drymass_contour=drymass_contour
+        self.drymass_outer_mean=drymass_outer_mean
+        self.edges=edges
+        self.hierarchy=hierarchy
+        self.contours=contours
+        self.raw_image=raw_image
+        self.contour_mask=contour_mask
+        self.contour_scaled=contour_scaled
+        self.contour_outer_mean=contour_outer_mean
+        self.alpha=alpha
+        self.selected_stack=selected_stack
+        self.drymass_ent_mean=drymass_ent_mean

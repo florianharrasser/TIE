@@ -1,55 +1,75 @@
 import matplotlib
 matplotlib.use('QtAgg')
 from PyQt6.QtWidgets import (
-    QPushButton, QWidget, QVBoxLayout, QLabel, QSlider 
+    QPushButton, QWidget, QLabel, QSlider, QGridLayout
     )
 from  MplCanvas import MplCanvas
 from PyQt6.QtCore import Qt
-from phase_window import PhaseWindow
-import calculation as calc
 
 
 class SelectWindow(QWidget):
-    def __init__(self, file):
+    def __init__(self, file, main_window, len_sample):
         super().__init__()        
         self.setWindowTitle("Select File")
 
         self.file =file
-        self.phase_window = PhaseWindow(self.file)
-        self.mc = MplCanvas(self, width=50, height=40, dpi=100)
-        self.idx_focused_image = 0
-        #self.file.stack = self.file.sample/self.file.background
+        self.mc = MplCanvas(self, self.file, False, width=50, height=40, dpi=100)
+        self.idx_image = 0
+        self.len_sample=len_sample
+        # self.idx_focused_image_calc=idx_calc
+        self.main_window=main_window
 
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
+        self.page_layout = QGridLayout()
+        self.setLayout(self.page_layout)
+        
 
+        self.lbl_focused_image_calc=QLabel("Calculated focused image: " +str(self.file.idx_focused_image_calc))
+        self.page_layout.addWidget(self.lbl_focused_image_calc, 0, 0, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        sld_select_image = QSlider()
-        sld_select_image.setOrientation(Qt.Orientation.Horizontal)
-        sld_select_image.setMinimum(0)
-        sld_select_image.setMaximum(11)
-        sld_select_image.valueChanged.connect(self.value_changed)
-        self.layout.addWidget(sld_select_image)
+        self.page_layout.addWidget(self.mc,1,0,3,1, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        self.lbl_idx_of_image = QLabel("0")
-        self.lbl_idx_of_image.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.layout.addWidget(self.lbl_idx_of_image)
+        self.btn_select_image_up=QPushButton("^")
+        self.btn_select_image_up.clicked.connect(self.select_image_up)
+        self.btn_select_image_up.setFixedSize(20, 20)
+        self.page_layout.addWidget(self.btn_select_image_up, 1, 1, 1, 1, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        self.layout.addWidget(self.mc)
+        self.sld_select_image=QSlider()
+        self.sld_select_image.setOrientation(Qt.Orientation.Vertical)
+        self.sld_select_image.setMinimum(0)
+        self.sld_select_image.setMaximum(self.len_sample)
+        self.sld_select_image.valueChanged.connect(self.value_changed)
+        self.page_layout.addWidget(self.sld_select_image,2, 1)
 
-        btn_save_idx_focused_image = QPushButton("choose this image")
-        btn_save_idx_focused_image.clicked.connect(self.save_idx_focused_image)
-        self.layout.addWidget(btn_save_idx_focused_image)
+        self.btn_select_image_down=QPushButton("v")
+        self.btn_select_image_down.clicked.connect(self.select_image_down)
+        self.btn_select_image_down.setFixedSize(20, 20)
+        self.page_layout.addWidget(self.btn_select_image_down, 3, 1, 1, 1, alignment=Qt.AlignmentFlag.AlignCenter)
+    
+        self.lbl_idx_of_image=QLabel("0")
+        self.page_layout.addWidget(self.lbl_idx_of_image, 4, 1, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        # self.lbl_focused_image_calculated=QLabel(str(5))
-        # self.layout.addWidget(self.lbl_focused_image_calculated)
+        self.btn_save_idx_focused_image=QPushButton("Choose this image")
+        self.btn_save_idx_focused_image.clicked.connect(self.save_idx_focused_image)
+        self.page_layout.addWidget(self.btn_save_idx_focused_image, 4, 0, alignment=Qt.AlignmentFlag.AlignCenter)
        
     def value_changed(self, i):
-        self.mc.check_z_position_images(self.file, i)
+        self.mc.show_focused_image('Raw image', self.file, i)
         self.lbl_idx_of_image.setText(str(i))
-        self.idx_focused_image = i
+        self.idx_focused_image=i
+    
+    def select_image_up(self):
+        self.sld_select_image.setValue(self.sld_select_image.value()+1)
+        self.lbl_idx_of_image.setText(str(self.sld_select_image.value()))
+
+    def select_image_down(self):
+        self.sld_select_image.setValue(self.sld_select_image.value()-1)
+        self.lbl_idx_of_image.setText(str(self.sld_select_image.value()))
+        self.idx_focused_image=self.sld_select_image.value()
     
     def save_idx_focused_image(self):
-        self.file.idx_focused_image = self.idx_focused_image
-        self.phase_window.show()
+        self.file.idx_focused_image=self.idx_focused_image
         self.close()
+
+    def closeEvent(self, event):
+        self.main_window.show_raw_image()
+        self.main_window.lbl_focused_image.setText("Index focused image: "+str(self.file.idx_focused_image))

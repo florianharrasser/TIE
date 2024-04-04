@@ -3,8 +3,7 @@ matplotlib.use('QtAgg')
 from PyQt6.QtWidgets import (
     QPushButton, QWidget, QVBoxLayout, QLineEdit,  QLabel
     )
-
-
+import calculation as calc
 
 
 class SettingWindow(QWidget):
@@ -13,10 +12,14 @@ class SettingWindow(QWidget):
         self.resize(300, 100)
         self.setWindowTitle("Properties")
 
+        self.main_window=main_window
         self.file=main_window.file
 
         layout = QVBoxLayout()
         self.setLayout(layout)
+
+        self.lbl_status=QLabel("Please upload a file!")
+        layout.addWidget(self.lbl_status)
       
         layout.addWidget(QLabel(text = "Magnification:"))
         self.txt_magnification = QLineEdit()
@@ -43,15 +46,28 @@ class SettingWindow(QWidget):
         self.txt_idx_background.setText(str(self.file.idx_background))
         layout.addWidget(self.txt_idx_background)
 
-        self.btn_save_properties = QPushButton("Save")
+        if(self.file.idx_focused_image!=-1): 
+            self.lbl_idx_focused_image=QLabel("Index of focused image: "+str(self.file.idx_focused_image))
+            layout.addWidget(self.lbl_idx_focused_image)
+
+        self.btn_save_properties = QPushButton("Continue")
         self.btn_save_properties.clicked.connect(self.save_properties)
         layout.addWidget(self.btn_save_properties)
-
 
     def save_properties(self):
         self.file.magnification = float(self.txt_magnification.text())
         self.file.camera_increment = float(self.txt_camera_increment.text())
         self.file.axial_step = float(self.txt_axial_step.text())
-        self.file.idx_background = float(self.txt_idx_background.text())
-        self.file.idx_sample = float(self.txt_idx_sample.text())
+        self.file.idx_background = int(self.txt_idx_background.text())
+        self.file.idx_sample = int(self.txt_idx_sample.text())
+        calc.calculate_background_sample_stack(self.file)
         self.close()
+    
+    def closeEvent(self, event):
+        try:
+            if(self.file.magnification==-1): raise Exception('Please set the parameters right!')
+            self.main_window.show_raw_image()
+            self.main_window.lbl_focused_image.setText("Index focused image: "+str(self.file.idx_focused_image_calc))
+        except Exception as e:
+            event.ignore()
+            self.main_window.error_message(e)
