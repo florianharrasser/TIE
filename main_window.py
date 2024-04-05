@@ -379,7 +379,8 @@ class Main(QMainWindow):
             self.layout().removeWidget(self.mc2)
             self.mc2=MplCanvas(self.file, self, False, width=5, height=4, dpi=100)
             self.page_layout.addWidget(self.mc2,0,3,7,1)
-            self.mc2.draw_contours_with_colorbar( 'OPL',self.file.opd_dry_mass, self.file.contours, self.sld_find_contour.value())
+            title='Mass in ng:'+str(round(self.file.drymass_contour,3))
+            self.mc2.draw_contours_with_colorbar( title,self.file.opd_dry_mass, self.file.contours, self.sld_find_contour.value())
 
             self.layout().removeWidget(self.mc3)
             self.mc3=MplCanvas(self.file, self,False, width=5, height=4, dpi=100)
@@ -406,7 +407,8 @@ class Main(QMainWindow):
             self.layout().removeWidget(self.mc2)
             self.mc2=MplCanvas(self.file, self, False, width=5, height=4, dpi=100)
             self.page_layout.addWidget(self.mc2,0,3,7,1)
-            self.mc2.draw_contours_with_colorbar('OPL',self.file.opd_dry_mass, self.file.contour_scaled, 0)
+            title='Mass in ng:'+str(round(self.file.drymass_contour,3))
+            self.mc2.draw_contours_with_colorbar(title ,self.file.opd_dry_mass, self.file.contour_scaled, 0)
 
             self.layout().removeWidget(self.mc3)
             self.mc3=MplCanvas(self.file, self, False, width=5, height=4, dpi=100)

@@ -7,7 +7,7 @@ from matplotlib.figure import Figure
 from matplotlib.widgets import RectangleSelector
 import matplotlib.pyplot as plt
 import cv2
-import inspect
+from matplotlib.colors import LinearSegmentedColormap
 
 
 
@@ -33,6 +33,8 @@ class MplCanvas(FigureCanvasQTAgg):
         self.axes.clear()       
         self.axes.imshow(file.sample[idx_focused_image], cmap=matplotlib.cm.gray, interpolation='nearest')
         self.axes.set_title(title)
+        self.axes.set_xlabel(r'Pixel')
+        self.axes.set_ylabel(r'Pixel')
         self.draw()
     
     def show_drymass(self, title, file):
@@ -61,10 +63,21 @@ class MplCanvas(FigureCanvasQTAgg):
     def draw_contours_with_colorbar(self,title, image, contours, contourIdx):
         self.axes.clear()
         image_with_contours = image.copy()
-        cv2.drawContours(image_with_contours, contours=contours, contourIdx=contourIdx, color=np.max(self.file.opd_dry_mass), thickness=5, lineType=cv2.LINE_AA)
-        fig=self.axes.imshow(image_with_contours, cmap="hsv")
+        cv2.drawContours(image_with_contours, contours=contours, contourIdx=contourIdx, color=np.max(self.file.opd_dry_mass), thickness=2, lineType=cv2.LINE_AA)
+        colors = [(0, 'white'), (0.25, 'blue'), (0.5, 'green'),(0.75, 'yellow'), (1, 'red')]
+
+
+        custom_cmap = LinearSegmentedColormap.from_list('custom_cmap', colors)
+        fig=self.axes.imshow(image_with_contours, cmap=custom_cmap)
         self.axes.set_title(title)
-        self.axes.figure.colorbar(fig, ax=self.axes) 
+        self.axes.figure.colorbar(fig, ax=self.axes)
+
+        xticks = np.round(np.round(np.array(self.axes.get_xticks()) * self.file.pixel_size*1e6, 1),1)
+        yticks = np.round(np.round(np.array(self.axes.get_yticks()) * self.file.pixel_size*1e6,1),1)
+        self.axes.set_xticklabels(xticks)
+        self.axes.set_yticklabels(yticks)
+        self.axes.set_xlabel(r'$\mu m$')
+        self.axes.set_ylabel(r'$\mu m$')
         self.draw()
     
     def draw_contour(self, title, image, contour, idx):
@@ -73,6 +86,13 @@ class MplCanvas(FigureCanvasQTAgg):
         cv2.drawContours(image_with_contours, contours=contour, contourIdx=idx, color=200, thickness=2, lineType=cv2.LINE_AA)
         self.axes.imshow(image_with_contours)
         self.axes.set_title(title)
+
+        xticks = (np.array(self.axes.get_xticks()) + self.file.x1).astype(int)
+        yticks = (np.array(self.axes.get_yticks()) + self.file.y1).astype(int)
+        self.axes.set_xticklabels(xticks)
+        self.axes.set_yticklabels(yticks)
+        self.axes.set_xlabel(r'Pixel')
+        self.axes.set_ylabel(r'Pixel')
         self.draw()
 
     def show_mask_for_sum(self):
