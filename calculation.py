@@ -50,7 +50,7 @@ def calculate_background_sample_stack(file):
 def calculate_phase(file, m:int, bool):
     if bool:
         file.selected_stack = file.stack[:,file.y1:file.y2,file.x1:file.x2].copy()
-        file.raw_image=file.sample[file.idx_focused_image][file.y1:file.y2,file.x1:file.x2].copy()
+        file.raw_image=file.sample[1][file.y1:file.y2,file.x1:file.x2].copy()
 
     n1 = file.idx_focused_image - m
     n2 = file.idx_focused_image + m 
@@ -66,15 +66,15 @@ def calculate_phase(file, m:int, bool):
     Nx,Ny = I0.shape    
 
     dI = -(I0 - I1)/dz #axial intensity gradient estimate
-    kx = 2*np.pi*np.fft.fftfreq(Nx, file.camera_increment)
-    ky = 2*np.pi*np.fft.fftfreq(Ny, file.camera_increment)
+    kx = 2*np.pi*np.fft.fftfreq(Nx, file.pixel_size)
+    ky = 2*np.pi*np.fft.fftfreq(Ny, file.pixel_size)
     Kx, Ky = np.meshgrid(ky,kx)
 
     eps = 1e-4 #to avoid division by zero
     F_Psi = np.fft.fft2(dI)/(-(Kx**2 + Ky**2) - eps)
     Psi = np.real(np.fft.ifft2(F_Psi))
     gx, gy = np.gradient(Psi)
-    tmp = divergence((gx/I0), (gy/I0))/file.camera_increment**2  #divide by ux**2 to account for the units!
+    tmp = divergence((gx/I0), (gy/I0))/file.pixel_size**2  #divide by ux**2 to account for the units!
     
     #solving the laplace equation via fft:
     F_OPL = np.fft.fft2(tmp)/(-(Kx**2 + Ky**2) - eps)
@@ -101,11 +101,11 @@ def calculate_drymass_entire(file):
     OPD_dry_mass -= outer_mean
 
     sigma = OPD_dry_mass/file.alpha
-    mass = np.sum(sigma)*file.camera_increment**2 #dry mass in gramm
+    mass = np.sum(sigma)*file.pixel_size**2 #dry mass in gramm
 
 
     file.drymass_ent= np.round(mass,5)
-    file.drymass_ent_mean=np.round((outer_mean/file.alpha)*file.camera_increment**2 ,5)
+    file.drymass_ent_mean=np.round((outer_mean/file.alpha)*file.pixel_size**2 ,5)
     print("mass insg: ", mass)
     file.opd_dry_mass = OPD_dry_mass.astype(np.float64)
 
@@ -169,8 +169,8 @@ def contour_mass(file, contour):
             else:
                 mass_outside=mass_outside+(file.opd_dry_mass[j][i])
 
-    mass_inside=np.round((mass_inside/file.alpha)*file.camera_increment**2, 5)
-    mass_outside=np.round((mass_outside/file.alpha)*file.camera_increment**2, 5)
+    mass_inside=np.round((mass_inside/file.alpha)*file.pixel_size**2, 5)
+    mass_outside=np.round((mass_outside/file.alpha)*file.pixel_size**2, 5)
     return mass_inside, mass_outside
 
 def contour_mean(file, contour):
@@ -186,7 +186,7 @@ def contour_mean(file, contour):
                 if mask[j][i]==255:
                     outer_mean = outer_mean+file.OPL_mixed[j][i]
         
-        return np.round(outer_mean/file.alpha*file.camera_increment**2,5)
+        return np.round(outer_mean/file.alpha*file.pixel_size**2,5)
 
 def calculate_with_tvnotm(file, m:int, bool):   
         print("TVNORM START!")     
@@ -201,11 +201,9 @@ def calculate_with_tvnotm(file, m:int, bool):
         I2 = file.selected_stack[n2]
         dI_dz = -(I1 - I2)/np.abs(n2-n1)
         tm = TIE_ADMM(nx,ny)
-        #file.lbda_TV = 1e-5
         result = tm.solve_tie(dI_dz, maxiter=file.iteration, lambda_tv=file.lbda_TV)
-        return result*file.axial_step/file.camera_increment
-        #file.OPL = result #*file.axial_step/file.camera_increment
-        #file.OPL = file.OPL.astype(np.float32)
+        return result*file.axial_step/file.pixel_size
+
 
 def mixing_tv(file):
     sigma=1

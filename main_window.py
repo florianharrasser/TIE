@@ -274,7 +274,7 @@ class Main(QMainWindow):
                 with open(path, 'w') as file:
                     csv_writer = csv.writer(file)
                     csv_writer.writerow(["magnification",self.file.magnification])
-                    csv_writer.writerow(["camera increment",self.file.camera_increment])
+                    csv_writer.writerow(["camera increment",self.file.pixel_size])
                     csv_writer.writerow(["axial step",self.file.axial_step])
                     csv_writer.writerow(["alpha",self.file.alpha])
                     csv_writer.writerow(["index of infocus image",self.file.idx_focused_image])
@@ -313,7 +313,7 @@ class Main(QMainWindow):
             self.layout().removeWidget(self.mc1)
             self.mc1=MplCanvas(self.file, self, True, width=5, height=4, dpi=100)
             self.page_layout.addWidget(self.mc1,0,2,7,1)   
-            self.mc1.show_focused_image('Raw file',self.file, self.file.idx_focused_image)
+            self.mc1.show_focused_image('Raw file',self.file, 1)
 
     def _show_OPL_plot_default(self, mixing):
         try:

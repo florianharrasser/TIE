@@ -2,7 +2,7 @@ from numpy import ndarray
 
 class Daten():
     def __init__(self,  filename:str="", edges=None, sample: ndarray=[], drymass_ent:float = 0, drymass_contour:float=0,
-                  magnification:float=60, drymass_outer_mean:float=0, camera_increment:float=104e-9, axial_step:float=1e-6,
+                  magnification:float=60, drymass_outer_mean:float=0, pixel_size:float=104e-9, axial_step:float=1e-6,
                   idx_background:int=3,   idx_sample:int=1, idx_focused_image:int = -1, idx_focused_image_calc=-1, 
                   x1:int=-1, y1:int=-1, x2:int=-1, y2:int=-1, OPL_idx_low:int=1, OPL_idx_high:int=1, alpha:float=0.190 * 1e-6, 
                   iteration:int=500, OPL_mixed = None, opd_dry_mass=None, stack=None, background=None, file=None, contours=[], hierarchy = [],
@@ -12,7 +12,7 @@ class Daten():
         self.file = file
         self.filename =filename
         self.magnification = magnification
-        self.camera_increment = camera_increment
+        self.pixel_size = pixel_size
         self.axial_step = axial_step
         self.idx_background = idx_background
         self.idx_sample = idx_sample
