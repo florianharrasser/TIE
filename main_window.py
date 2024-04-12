@@ -9,7 +9,7 @@ import matplotlib
 matplotlib.use('QtAgg')
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QPushButton, QWidget, QFileDialog,
-    QLabel, QGridLayout, QToolBar, QLineEdit, QSlider, QMessageBox
+    QLabel, QGridLayout, QToolBar, QLineEdit, QSlider, QMessageBox, QFrame
     )
 from PyQt6.QtGui import QAction
 from  MplCanvas import MplCanvas
@@ -34,7 +34,6 @@ class Main(QMainWindow):
         self.mc1=MplCanvas(self.file, self, False, width=5, height=4, dpi=100)
         self.mc2=MplCanvas(self.file, self, False, width=5, height=4, dpi=100)
         self.mc3=MplCanvas(self.file, self, False, width=5, height=4, dpi=100)
-        self.mc4=MplCanvas(self.file, self, False, width=5, height=4, dpi=100)
 
         self.btn_open_dialog = QAction("Upload file")
         self.btn_open_dialog.triggered.connect(self.open_dialog)
@@ -56,6 +55,7 @@ class Main(QMainWindow):
 
 
 
+
         self.lbl_filename=QLabel("Current File: None")
         self.lbl_focused_image=QLabel("Index focused image: 0")
         self.lbl_OPL_low=QLabel("Index OPL low:")
@@ -68,50 +68,67 @@ class Main(QMainWindow):
         self.txt_OPL_high.setText(str(self.file.OPL_idx_high))
         self.lbl_mass_total=QLabel("Mass total in ng: 0")
         self.lbl_mass_inside=QLabel("Mass inside cont. in ng: 0")
-
-        self.parameter_layout.addWidget(self.lbl_filename,0,0,1,1, alignment=Qt.AlignmentFlag.AlignHCenter)
-        self.parameter_layout.addWidget(self.lbl_focused_image,1,0,1,1, alignment=Qt.AlignmentFlag.AlignHCenter)
-        self.parameter_layout.addWidget(self.lbl_OPL_low,2,1,1,1, alignment=Qt.AlignmentFlag.AlignHCenter)
-        self.parameter_layout.addWidget(self.txt_OPL_low,2,2,1,1, alignment=Qt.AlignmentFlag.AlignHCenter)
-        self.parameter_layout.addWidget(self.lbl_OPL_high,3,1,1,1, alignment=Qt.AlignmentFlag.AlignHCenter)
-        self.parameter_layout.addWidget(self.txt_OPL_high,3,2,1,1, alignment=Qt.AlignmentFlag.AlignHCenter)
-        self.parameter_layout.addWidget(self.lbl_mass_total,0,1,1,1, alignment=Qt.AlignmentFlag.AlignHCenter)
-        self.parameter_layout.addWidget(self.lbl_mass_inside,1,1,1,1, alignment=Qt.AlignmentFlag.AlignHCenter)
+        self.lbl_mass_contour_mean=QLabel("Contour mean in ng: 0")
+        self.lbl_mass_contour_effective=QLabel("Contour effective in ng: 0")
 
         self.btn_calculate_OPL=QPushButton("Calculate OPL")
         self.btn_calculate_OPL.setDisabled(True)
         self.btn_calculate_OPL.clicked.connect(self.show_OPL_plot)
-        self.parameter_layout.addWidget(self.btn_calculate_OPL,4,0)
 
         self.btn_calculate_with_tvnorm=QPushButton("Calculate with TV Norm ")
         self.btn_calculate_with_tvnorm.setDisabled(True)
         self.btn_calculate_with_tvnorm.clicked.connect(self.show_OPL_plot_tv)
-        self.parameter_layout.addWidget(self.btn_calculate_with_tvnorm,4,1)
+
+        frame1=QFrame()
+        frame1.setStyleSheet("QFrame { background-color: lightgray; border: 2px lightgray; border-radius: 10px;}")
+        frame1_layout=QGridLayout(frame1)
+        frame1_layout.addWidget(self.lbl_filename,0,0)
+        frame1_layout.addWidget(self.lbl_focused_image,1,0)
+        frame1_layout.addWidget(self.lbl_mass_total,0,1, alignment=Qt.AlignmentFlag.AlignLeft)
+        frame1_layout.addWidget(self.lbl_mass_inside,0,1,alignment=Qt.AlignmentFlag.AlignRight)
+        frame1_layout.addWidget(self.lbl_mass_contour_mean, 1, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+        frame1_layout.addWidget(self.lbl_mass_contour_effective, 1, 1, alignment=Qt.AlignmentFlag.AlignRight)
+        self.parameter_layout.addWidget(frame1,0,0,2,3)
+
+        frame2=QFrame()
+        frame2.setStyleSheet("QFrame { background-color: lightgray; border: 2px lightgray; border-radius: 10px;}")
+        frame2_layout=QGridLayout(frame2)
+        frame2_layout.addWidget(self.lbl_OPL_low, 0, 0, 1, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+        frame2_layout.addWidget(self.txt_OPL_low, 0, 1, 1, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+        frame2_layout.addWidget(self.lbl_OPL_high, 1, 0, 1, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+        frame2_layout.addWidget(self.txt_OPL_high, 1, 1, 1, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+        frame2_layout.addWidget(self.btn_calculate_OPL, 0, 2, 1, 1, alignment=Qt.AlignmentFlag.AlignHCenter)
+        frame2_layout.addWidget(self.btn_calculate_with_tvnorm, 1, 2, 1, 1, alignment=Qt.AlignmentFlag.AlignHCenter)
+        self.parameter_layout.addWidget(frame2, 2, 0, 2, 3)
 
         self.page_layout.addWidget(self.mc1,0,1)
         self.page_layout.addWidget(self.mc2,1,0)
         self.page_layout.addWidget(self.mc3,1,1)
 
+        frame3=QFrame()
+        frame3.setStyleSheet("QFrame { background-color: lightgray; border: 2px lightgray; border-radius: 10px;}")
+        frame3_layout=QGridLayout(frame3)
+
         self.sld_find_contour_tresh = QSlider()
         self.sld_find_contour_tresh.setOrientation(Qt.Orientation.Horizontal)
         self.sld_find_contour_tresh.setMinimum(1)
-        self.sld_find_contour_tresh.setMaximum(250)#Maximum anpassen
+        self.sld_find_contour_tresh.setMaximum(250)
         self.sld_find_contour_tresh.setDisabled(True)
         self.sld_find_contour_tresh.valueChanged.connect(self.contour_detection)
         self.sld_find_contour_tresh.setFixedSize(500,30)
         self.lbl_find_contour_tresh=QLabel("Treshhold: 0")
-        self.parameter_layout.addWidget(self.lbl_find_contour_tresh,5,0,1,3,alignment=Qt.AlignmentFlag.AlignHCenter)
-        self.parameter_layout.addWidget(self.sld_find_contour_tresh,6,1,1,1, alignment=Qt.AlignmentFlag.AlignHCenter)
+        frame3_layout.addWidget(self.lbl_find_contour_tresh,0,0,1,3,alignment=Qt.AlignmentFlag.AlignHCenter)
+        frame3_layout.addWidget(self.sld_find_contour_tresh,1,1,1,1, alignment=Qt.AlignmentFlag.AlignHCenter)
         self.btn_find_contour_tresh_down=QPushButton("<")
         self.btn_find_contour_tresh_down.setFixedSize(30,30)
         self.btn_find_contour_tresh_down.setDisabled(True)
         self.btn_find_contour_tresh_down.clicked.connect(self.find_contour_tresh_down)
-        self.parameter_layout.addWidget(self.btn_find_contour_tresh_down,6,0)
+        frame3_layout.addWidget(self.btn_find_contour_tresh_down,1,0)
         self.btn_find_contour_tresh_up=QPushButton(">")
         self.btn_find_contour_tresh_up.setFixedSize(30,30)
         self.btn_find_contour_tresh_up.setDisabled(True)
         self.btn_find_contour_tresh_up.clicked.connect(self.find_contour_tresh_up)
-        self.parameter_layout.addWidget(self.btn_find_contour_tresh_up,6,2)
+        frame3_layout.addWidget(self.btn_find_contour_tresh_up,1,2)
 
 
         self.sld_find_contour = QSlider()
@@ -124,40 +141,41 @@ class Main(QMainWindow):
         self.sld_find_contour.setFixedSize(500,30)
         self.sld_find_contour.setToolTip("Please search a contour by Sliding")
         self.lbl_find_contour=QLabel("Contour Nr.: 0")
-        self.parameter_layout.addWidget(self.lbl_find_contour,7,0,1,3,alignment=Qt.AlignmentFlag.AlignHCenter)
-        self.parameter_layout.addWidget(self.sld_find_contour,8,1,1,1, alignment=Qt.AlignmentFlag.AlignHCenter)
+        frame3_layout.addWidget(self.lbl_find_contour,2,0,1,3,alignment=Qt.AlignmentFlag.AlignHCenter)
+        frame3_layout.addWidget(self.sld_find_contour,3,1,1,1, alignment=Qt.AlignmentFlag.AlignHCenter)
         self.btn_find_contour_down=QPushButton("<")
         self.btn_find_contour_down.setFixedSize(30,30)
         self.btn_find_contour_down.setDisabled(True)
         self.btn_find_contour_down.clicked.connect(self.find_contour_down)
-        self.parameter_layout.addWidget(self.btn_find_contour_down,8,0)
+        frame3_layout.addWidget(self.btn_find_contour_down,3,0)
         self.btn_find_contour_up=QPushButton(">")
         self.btn_find_contour_up.setFixedSize(30,30)
         self.btn_find_contour_up.setDisabled(True)
         self.btn_find_contour_up.clicked.connect(self.find_contour_up)
-        self.parameter_layout.addWidget(self.btn_find_contour_up,8,2)
+        frame3_layout.addWidget(self.btn_find_contour_up,3,2)
 
         self.sld_scale = QSlider()
         self.sld_scale.setOrientation(Qt.Orientation.Horizontal)
-        self.sld_scale.setMinimum(0)
-        self.sld_scale.setMaximum(300)
+        self.sld_scale.setMinimum(50)
+        self.sld_scale.setMaximum(150)
         self.sld_scale.setDisabled(True)
         self.sld_scale.setValue(100)
         self.sld_scale.setFixedSize(500,30)
         self.sld_scale.valueChanged.connect(self.show_scaled_contours)
         self.lbl_scale=QLabel("Scale: 1")
-        self.parameter_layout.addWidget(self.lbl_scale,9,0,1,3,alignment=Qt.AlignmentFlag.AlignHCenter)
-        self.parameter_layout.addWidget(self.sld_scale,10,1,1,1, alignment=Qt.AlignmentFlag.AlignHCenter)
+        frame3_layout.addWidget(self.lbl_scale,4,0,1,3,alignment=Qt.AlignmentFlag.AlignHCenter)
+        frame3_layout.addWidget(self.sld_scale,5,1,1,1, alignment=Qt.AlignmentFlag.AlignHCenter)
         self.btn_scale_down=QPushButton("<")
         self.btn_scale_down.setFixedSize(30,30)
         self.btn_scale_down.setDisabled(True)
         self.btn_scale_down.clicked.connect(self.scale_down)
-        self.parameter_layout.addWidget(self.btn_scale_down,10,0)
+        frame3_layout.addWidget(self.btn_scale_down,5,0)
         self.btn_scale_up=QPushButton(">")
         self.btn_scale_up.setFixedSize(30,30)
         self.btn_scale_up.setDisabled(True)
         self.btn_scale_up.clicked.connect(self.scale_up)
-        self.parameter_layout.addWidget(self.btn_scale_up,10,2)
+        frame3_layout.addWidget(self.btn_scale_up,5,2)
+        self.parameter_layout.addWidget(frame3,4,0,3,3)
       
         widget = QWidget()
         widget.setLayout(self.page_layout)
@@ -179,7 +197,7 @@ class Main(QMainWindow):
                 self.setting_window.lbl_status.setText("\n".join(lifProperties))
 
             self.setting_window.show()
-            #self.file.filename=""
+            self.file.filename=""
             #extracting the filename from path
             for i in range (len(path)-5, -1, -1):
                 if(path[i] == '/'): 
@@ -265,7 +283,9 @@ class Main(QMainWindow):
         self._show_OPL_plot_default(lambda: calc.mixing(self.file))
     
     def show_OPL_plot_tv(self):
+        self.btn_calculate_with_tvnorm.setText("Please wait!")
         self._show_OPL_plot_default(lambda: calc.mixing_tv(self.file))
+        self.btn_calculate_with_tvnorm.setText("Calculate with TV Norm !")
 
     def validate_input_for_calculation_drymass(self):
         return (self.txt_OPL_low.text()=='' or
@@ -307,10 +327,14 @@ class Main(QMainWindow):
             self.file.contour_scaled=[]
             self.file.contour_scaled.append(calc.scale_contour(self.file.contours[self.sld_find_contour.value()], self.sld_scale.value()/100))
             self.file.drymass_contour, outside = calc.contour_mass(self.file, self.file.contour_scaled[0])
+            self.file.contour_outer_mean=calc.contour_mean(self.file, self.file.contour_scaled[0])
             self.lbl_scale.setText("Scale: "+str(self.sld_scale.value()/100))
             self.lbl_mass_total.setText("Mass total in ng: "+str(self.file.drymass_ent))
             self.lbl_mass_inside.setText("Mass inside cont. in ng: "+str(self.file.drymass_contour))
-            # self.lbl_mass_outside.setText("Mass Outside: "+str(outside))
+            self.lbl_mass_contour_mean.setText("Contour mean in ng: "+str(self.file.contour_outer_mean))
+            effective_mass =self.file.drymass_contour-self.file.contour_outer_mean
+
+            self.lbl_mass_contour_effective.setText("Contour effective in ng: "+str(round(effective_mass,5)))
 
             self.layout().removeWidget(self.mc2)
             self.mc2=MplCanvas(self.file, self, False, width=5, height=4, dpi=100)
@@ -322,11 +346,6 @@ class Main(QMainWindow):
             self.mc3=MplCanvas(self.file, self, False, width=5, height=4, dpi=100)
             self.page_layout.addWidget(self.mc3,1,1)
             self.mc3.draw_contour('selected Part',self.file.raw_image, self.file.contour_scaled, 0)
-
-            # self.layout().removeWidget(self.mc4)
-            # self.mc4=MplCanvas(self.file, self, False, width=5, height=4, dpi=100)
-            # self.page_layout.addWidget(self.mc4,1,1)
-            # self.mc4.draw_contour('Canny edge detection',self.file.edges, self.file.contour_scaled, 0)
 
     def find_contour_tresh_up(self):
         self.sld_find_contour_tresh.setValue(self.sld_find_contour_tresh.value()+1)

@@ -43,7 +43,7 @@ class SettingWindow(QWidget):
 
         layout.addWidget(QLabel(text = "Axial step in nm:"))
         self.txt_axial_step = QLineEdit()
-        self.txt_axial_step.setText(str(self.file.axial_step*1e9))
+        self.txt_axial_step.setText(str(round((self.file.axial_step*1e9),2)))
         layout.addWidget(self.txt_axial_step)
 
         layout.addWidget(QLabel(text = "Constant alpha in nm^3/g:"))
