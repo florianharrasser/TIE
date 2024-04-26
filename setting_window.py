@@ -51,9 +51,9 @@ class SettingWindow(QWidget):
         self.txt_alpha.setText(str(round(self.file.alpha*1e9,3)))
         layout.addWidget(self.txt_alpha)
 
-        layout.addWidget(QLabel(text = "Constant lbda_TV in nm??"))
+        layout.addWidget(QLabel(text = "Regularisation constant (lbda_TV*10^6):"))
         self.txt_lbda_TV = QLineEdit()
-        self.txt_lbda_TV.setText(str(self.file.lbda_TV*1e9))
+        self.txt_lbda_TV.setText(str(self.file.lbda_TV*1e6))
         layout.addWidget(self.txt_lbda_TV)
 
         layout.addWidget(QLabel(text = "#Iterations for TV Norm:"))
@@ -80,7 +80,7 @@ class SettingWindow(QWidget):
             self.file.idx_background = int(self.txt_idx_background.text())
             self.file.idx_sample = int(self.txt_idx_sample.text())
             self.file.alpha=float(self.txt_alpha.text())*1e-9
-            self.file.lbda_TV=float(self.txt_lbda_TV.text())*1e-9
+            self.file.lbda_TV=float(self.txt_lbda_TV.text())*1e-6
             self.file.iteration=int(self.txt_iteration.text())
             
             if self.file.file!=None:
@@ -88,6 +88,9 @@ class SettingWindow(QWidget):
                 calc.calculate_background_sample_stack(self.file)
                 self.main_window.lbl_focused_image.setText("Index focused image: "+str(self.file.idx_focused_image))
                 self.main_window.btn_show_select_window.setDisabled(False)
+                self.main_window.btn_show_raw_image.setDisabled(False)
+                self.main_window.btn_show_stack.setDisabled(False)
+                self.main_window.btn_show_background.setDisabled(False)
                 self.main_window.show_raw_image()
             self.close()
         except Exception as e:

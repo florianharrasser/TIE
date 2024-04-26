@@ -89,8 +89,7 @@ def divergence(gx,gy):
 def calculate_drymass_entire(file):
     outer_slab = 2
     pm = 1
-    #pm = 1 #if its the negative instead of posititve set to -1, otherwise to 1
-    OPD_dry_mass = pm*file.OPL_mixed[:,:].copy() #in nm
+    OPD_dry_mass = pm*file.OPL_mixed[:,:].copy()
 
     #remove residual offsets by substacting mean of outer pixeles in area of interest
     outer_slab = 2 #thickness to consider 
@@ -119,7 +118,8 @@ def contour_detection(image, treshhold):
     # return contour, hierarchy
 
     for i, cont in enumerate(contour):
-        if (cv2.contourArea(cont) > 100):
+        area=cv2.contourArea(cont) 
+        if (area> 3000):
             file_contour.append(cont)
             file_hierarchy.append(hierarchy[0][i])
 
@@ -204,6 +204,11 @@ def calculate_with_tvnotm(file, m:int, bool):
         result = tm.solve_tie(dI_dz, maxiter=file.iteration, lambda_tv=file.lbda_TV)
         return result*file.axial_step/file.pixel_size
 
+def select_contour(file):
+    file.contours=[]
+    file.contours = [np.column_stack((file.draw_x, file.draw_y)).reshape((-1, 1, 2)).astype(np.int32)]
+    # for i in range(len(file.draw_x)):
+    #     file.contours.append([file.draw_x[i], file.draw_y[i]])
 
 def mixing_tv(file):
     sigma=1

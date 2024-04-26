@@ -31,9 +31,9 @@ class Main(QMainWindow):
 
         self.file = Daten()
 
-        self.mc1=MplCanvas(self.file, self, False, width=5, height=4, dpi=100)
-        self.mc2=MplCanvas(self.file, self, False, width=5, height=4, dpi=100)
-        self.mc3=MplCanvas(self.file, self, False, width=5, height=4, dpi=100)
+        self.mc1=MplCanvas(self.file, self, False, False, width=5, height=4, dpi=100)
+        self.mc2=MplCanvas(self.file, self, False, False, width=5, height=4, dpi=100)
+        self.mc3=MplCanvas(self.file, self, False, False, width=5, height=4, dpi=100)
 
         self.btn_open_dialog = QAction("Upload file")
         self.btn_open_dialog.triggered.connect(self.open_dialog)
@@ -69,7 +69,7 @@ class Main(QMainWindow):
         self.lbl_mass_total=QLabel("Mass total in ng: 0")
         self.lbl_mass_inside=QLabel("Mass inside cont. in ng: 0")
         self.lbl_mass_contour_mean=QLabel("Contour mean in ng: 0")
-        self.lbl_mass_contour_effective=QLabel("Contour effective in ng: 0")
+        self.lbl_mass_contour_effective=QLabel("<b>Contour effective in ng: 0</b>")
 
         self.btn_calculate_OPL=QPushButton("Calculate OPL")
         self.btn_calculate_OPL.setDisabled(True)
@@ -114,8 +114,9 @@ class Main(QMainWindow):
         self.sld_find_contour_tresh.setMinimum(1)
         self.sld_find_contour_tresh.setMaximum(250)
         self.sld_find_contour_tresh.setDisabled(True)
-        self.sld_find_contour_tresh.valueChanged.connect(self.contour_detection)
+        self.sld_find_contour_tresh.valueChanged.connect(self.treshhold_detection)
         self.sld_find_contour_tresh.setFixedSize(500,30)
+        self.sld_find_contour_tresh.setToolTip("Refine the threshold to precisely identify contours in your image")
         self.lbl_find_contour_tresh=QLabel("Treshhold: 0")
         frame3_layout.addWidget(self.lbl_find_contour_tresh,0,0,1,3,alignment=Qt.AlignmentFlag.AlignHCenter)
         frame3_layout.addWidget(self.sld_find_contour_tresh,1,1,1,1, alignment=Qt.AlignmentFlag.AlignHCenter)
@@ -139,7 +140,7 @@ class Main(QMainWindow):
         self.sld_find_contour.setDisabled(True)
         self.sld_find_contour.valueChanged.connect(self.contour_detection)
         self.sld_find_contour.setFixedSize(500,30)
-        self.sld_find_contour.setToolTip("Please search a contour by Sliding")
+        self.sld_find_contour.setToolTip("Use this slider to choose the right contour")
         self.lbl_find_contour=QLabel("Contour Nr.: 0")
         frame3_layout.addWidget(self.lbl_find_contour,2,0,1,3,alignment=Qt.AlignmentFlag.AlignHCenter)
         frame3_layout.addWidget(self.sld_find_contour,3,1,1,1, alignment=Qt.AlignmentFlag.AlignHCenter)
@@ -161,6 +162,7 @@ class Main(QMainWindow):
         self.sld_scale.setDisabled(True)
         self.sld_scale.setValue(100)
         self.sld_scale.setFixedSize(500,30)
+        self.sld_scale.setToolTip("Use this slider to adjust the scale of the contour")
         self.sld_scale.valueChanged.connect(self.show_scaled_contours)
         self.lbl_scale=QLabel("Scale: 1")
         frame3_layout.addWidget(self.lbl_scale,4,0,1,3,alignment=Qt.AlignmentFlag.AlignHCenter)
@@ -176,6 +178,35 @@ class Main(QMainWindow):
         self.btn_scale_up.clicked.connect(self.scale_up)
         frame3_layout.addWidget(self.btn_scale_up,5,2)
         self.parameter_layout.addWidget(frame3,4,0,3,3)
+
+        self.btn_show_background=QPushButton("BG")
+        self.btn_show_background.setFixedSize(30,30)
+        self.btn_show_background.setDisabled(True)
+        self.btn_show_background.clicked.connect(self.show_background)
+        self.page_layout.addWidget(self.btn_show_background, 0,2, alignment=Qt.AlignmentFlag.AlignTop)
+
+        self.btn_show_raw_image=QPushButton("IM")
+        self.btn_show_raw_image.setFixedSize(30,30)
+        self.btn_show_raw_image.setDisabled(True)
+        self.btn_show_raw_image.clicked.connect(self.show_raw_image)
+        self.page_layout.addWidget(self.btn_show_raw_image, 0,2, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        self.btn_show_stack=QPushButton("ST")
+        self.btn_show_stack.setFixedSize(30,30)
+        self.btn_show_stack.setDisabled(True)
+        self.btn_show_stack.clicked.connect(self.show_stack)
+        self.page_layout.addWidget(self.btn_show_stack, 0,2, alignment=Qt.AlignmentFlag.AlignBottom)
+
+        self.btn_draw_contour_yourself=QPushButton("Draw Contour by hand")
+        self.btn_draw_contour_yourself.setDisabled(True)
+        self.btn_draw_contour_yourself.clicked.connect(self.draw_contour_yourself)
+        self.page_layout.addWidget(self.btn_draw_contour_yourself, 3,0, alignment=Qt.AlignmentFlag.AlignRight)
+
+        self.btn_select_contour=QPushButton("Select Contour")
+        self.btn_select_contour.setDisabled(True)
+        self.btn_select_contour.clicked.connect(self.select_contour)
+        self.page_layout.addWidget(self.btn_select_contour, 3,0,alignment=Qt.AlignmentFlag.AlignLeft)
+
       
         widget = QWidget()
         widget.setLayout(self.page_layout)
@@ -212,25 +243,38 @@ class Main(QMainWindow):
     def save_file(self):
         try:
             if self.file.filename=="": raise Exception ('Error: No file to save! Please ensure that there is a file to save before proceeding.')
-            path, _ = QFileDialog.getSaveFileName(self, "Save File",str(self.file.filename), "Text Files (*.txt);; csv Files (*.csv)")
+            path, _ = QFileDialog.getSaveFileName(self, "Save File",str(self.file.filename), " csv Files (*.csv) ;; Text Files (*.txt)")
             if path:
-                self.mc2.save_figure(path[:-4])
+                self.mc1.save_figure(path[:-4]+'(rawfile)')
+                self.mc2.save_figure(path[:-4]+'(drymass)')
+                self.mc3.save_figure(path[:-4]+'(selectedpart)')
                         
                 with open(path, 'w') as file:
                     csv_writer = csv.writer(file)
                     csv_writer.writerow(["magnification",self.file.magnification])
-                    csv_writer.writerow(["camera increment",self.file.pixel_size])
-                    csv_writer.writerow(["axial step",self.file.axial_step])
+                    csv_writer.writerow(["pixel Size in m",self.file.pixel_size])
+                    csv_writer.writerow(["axial stepin m",self.file.axial_step])
                     csv_writer.writerow(["alpha",self.file.alpha])
-                    csv_writer.writerow(["index of infocus image",self.file.idx_focused_image])
-                    csv_writer.writerow(["Low index for OPL calculation",self.file.OPL_idx_low])       
-                    csv_writer.writerow(["High index for OPL calculation",self.file.OPL_idx_high])
-                    csv_writer.writerow(["total Mass",self.file.drymass_ent])
-                    csv_writer.writerow(["mass inside contour",self.file.drymass_contour])
+                    csv_writer.writerow(["lbda_TV",self.file.lbda_TV])
+                    csv_writer.writerow(["calculation option", self.file.calulation])
+                    csv_writer.writerow(["index infocus image",self.file.idx_focused_image])
+                    csv_writer.writerow(["index low OPL",self.file.OPL_idx_low])       
+                    csv_writer.writerow(["index high OPL",self.file.OPL_idx_high])
+                    csv_writer.writerow(["index background", self.file.idx_background])
+                    csv_writer.writerow(["index sample", self.file.idx_sample])
+                    csv_writer.writerow(["mass total image in ng",self.file.drymass_ent])
+                    csv_writer.writerow(["mass inside contour in ng",self.file.drymass_contour])
+                    csv_writer.writerow(["mass on contour in ng", self.file.contour_outer_mean])
+                    csv_writer.writerow(["mass effective in ng", (self.file.drymass_contour-self.file.contour_outer_mean)])
+                    csv_writer.writerow(["contour area", self.file.area])
+                    csv_writer.writerow(["number contour", self.file.contour_nr])
+                    csv_writer.writerow(["treshhold", self.file.treshhold])
+                    csv_writer.writerow(["scalefactor", self.file.scalefactor])                    
                     csv_writer.writerow(["x1",self.file.x1])
                     csv_writer.writerow(["x2",self.file.x2])
                     csv_writer.writerow(["y1",self.file.y1])
                     csv_writer.writerow(["y2",self.file.y2])
+
             else: raise Exception('Error: Wrong path. Please provide a valid path.')
         except Exception as e:
             self.error_message(e)
@@ -254,23 +298,40 @@ class Main(QMainWindow):
         self.select_window.value_changed(self.file.idx_focused_image)
         self.select_window.show()
 
-    def show_raw_image(self):
+    def show_background(self):
             self.layout().removeWidget(self.mc1)
-            self.mc1=MplCanvas(self.file, self, True, width=5, height=4, dpi=100)
+            self.mc1=MplCanvas(self.file, self, True, False, width=5, height=4, dpi=100)
             self.page_layout.addWidget(self.mc1,0,1)   
-            self.mc1.show_focused_image('Raw file',self.file, 1)
+            self.mc1.show_focused_image('Background Idx 1', self.file.pixel_size, self.file.background[1])
 
-    def _show_OPL_plot_default(self, mixing):
+    def show_raw_image(self):
+        self.layout().removeWidget(self.mc1)
+        self.mc1=MplCanvas(self.file, self, True, False,  width=5, height=4, dpi=100)
+        self.page_layout.addWidget(self.mc1,0,1)   
+        self.mc1.show_focused_image('Sample Idx 1', self.file.pixel_size, self.file.sample[1])
+
+    def show_stack(self):
+        self.layout().removeWidget(self.mc1)
+        self.mc1=MplCanvas(self.file, self, True, False, width=5, height=4, dpi=100)
+        self.page_layout.addWidget(self.mc1,0,1)   
+        self.mc1.show_focused_image('Stack Idx 1', self.file.pixel_size, self.file.stack[1])
+
+    def _show_OPL_plot_default(self, mixing_OPL):
         try:
-            self.set_to_startvalue()
+            self.lbl_mass_total.setText("Mass total in ng: 0")
+            self.lbl_mass_inside.setText("Mass inside cont. in ng: 0")
+            self.lbl_mass_contour_mean.setText("Contour mean in ng: 0")
+            self.lbl_mass_contour_effective.setText("<b>Contour effective in ng: 0</b>")
+
             if(int(self.txt_OPL_low.text())>int(self.txt_OPL_high.text())): 
                 raise Exception('Invalid input: The value of OPL-low cannot be greater than OPL-high. Please ensure that OPL-low is less than or equal to OPL-high.')
             if(int(self.txt_OPL_low.text())==0 or int(self.txt_OPL_high.text())==0 or self.file.alpha==0): 
                 raise Exception('Invalid input: The index (IDX) of OPL cannot be zero. Please provide a non-zero value for the index of OPL.')
             
             self.file.OPL_idx_low, self.file.OPL_idx_high = int(self.txt_OPL_low.text()), int(self.txt_OPL_high.text())
-            mixing()
+            mixing_OPL()
             calc.calculate_drymass_entire(self.file)
+            self.file.contours, self.file.hierarchy = calc.contour_detection(self.file.opd_dry_mass, treshhold=self.sld_find_contour_tresh.value())
             self.contour_detection()
 
             self.enable_all_buttons()
@@ -281,11 +342,11 @@ class Main(QMainWindow):
 
     def show_OPL_plot(self):
         self._show_OPL_plot_default(lambda: calc.mixing(self.file))
+        self.file.calulation="FFT"
     
     def show_OPL_plot_tv(self):
-        self.btn_calculate_with_tvnorm.setText("Please wait!")
         self._show_OPL_plot_default(lambda: calc.mixing_tv(self.file))
-        self.btn_calculate_with_tvnorm.setText("Calculate with TV Norm !")
+        self.file.calulation="Tv Norm"        
 
     def validate_input_for_calculation_drymass(self):
         return (self.txt_OPL_low.text()=='' or
@@ -295,35 +356,74 @@ class Main(QMainWindow):
             int(self.txt_OPL_high.text())<0 or
             int(self.txt_OPL_high.text())+self.file.idx_focused_image>=len(self.file.sample))
 
+    def treshhold_detection(self):
+        self.file.treshhold=self.sld_find_contour_tresh.value()
+        self.lbl_find_contour_tresh.setText("Treshhold: "+str(self.file.treshhold))
+        self.file.contours, self.file.hierarchy = calc.contour_detection(self.file.opd_dry_mass, treshhold=self.sld_find_contour_tresh.value())
+        self.contour_detection()
+
     def contour_detection(self):
-            self.lbl_find_contour.setText("Contour Nr.: "+str(self.sld_find_contour.value()))
-            self.lbl_find_contour_tresh.setText("Treshhold: "+str(self.sld_find_contour_tresh.value()))
-            self.file.contours, self.file.hierarchy = calc.contour_detection(self.file.opd_dry_mass, treshhold=self.sld_find_contour_tresh.value())
+        self.file.contour_nr=self.sld_find_contour.value()
+        self.lbl_find_contour.setText("Contour Nr.: "+str(self.file.contour_nr))
+        self.lbl_find_contour_tresh.setText("Treshhold: "+str(self.file.treshhold))
+        self.sld_find_contour.setMaximum(len(self.file.hierarchy)-1)        
 
-            self.sld_find_contour.setMaximum(len(self.file.hierarchy)-1)
+        self.sld_scale.setValue(100)
+        if self.sld_find_contour.value()!=-1:
+            self.sld_scale.setEnabled(True)
+        else:
+            self.sld_scale.setDisabled(True)
+        self.plot_contours()
+ 
+    def plot_contours(self):
+        self.layout().removeWidget(self.mc2)
+        self.mc2=MplCanvas(self.file, self, False, False, width=5, height=4, dpi=100)
+        self.page_layout.addWidget(self.mc2,1,0)
+        title='Mass:'+str(round(self.file.drymass_contour,3))+' ng'
+        self.mc2.draw_contours_with_colorbar( title,self.file.opd_dry_mass, self.file.contours, self.sld_find_contour.value(), True)
 
-            self.sld_scale.setValue(100)
-            if self.sld_find_contour.value()!=-1:
-                self.sld_scale.setEnabled(True)
-            else:
-                self.sld_scale.setDisabled(True)
-
-
-            self.layout().removeWidget(self.mc2)
-            self.mc2=MplCanvas(self.file, self, False, width=5, height=4, dpi=100)
-            self.page_layout.addWidget(self.mc2,1,0)
-            title='Mass in ng:'+str(round(self.file.drymass_contour,3))
-            self.mc2.draw_contours_with_colorbar( title,self.file.opd_dry_mass, self.file.contours, self.sld_find_contour.value())
-
-            self.layout().removeWidget(self.mc3)
-            self.mc3=MplCanvas(self.file, self,False, width=5, height=4, dpi=100)
-            self.page_layout.addWidget(self.mc3,1,1)
-            self.mc3.draw_contour('selected Part',self.file.raw_image, self.file.contours, self.sld_find_contour.value())
+        self.layout().removeWidget(self.mc3)
+        self.mc3=MplCanvas(self.file, self,False, False, width=5, height=4, dpi=100)
+        self.page_layout.addWidget(self.mc3,1,1)
+        self.mc3.draw_contour('selected Part',self.file.raw_image, self.file.contours, self.sld_find_contour.value(), True)
 
     def error_message(self, message):
         QMessageBox.critical(self, "Error!", str(message), buttons=QMessageBox.StandardButton.Close,)
+
+    def draw_contour_yourself(self):
+        self.file.draw_x=[]
+        self.file.draw_y=[]
+        self.layout().removeWidget(self.mc2)
+        self.mc2=MplCanvas(self.file, self, False, True, width=5, height=4, dpi=100)
+        self.page_layout.addWidget(self.mc2,1,0)
+        title='Mass:'+str(round(self.file.drymass_contour,3))+' ng'
+        self.mc2.draw_contours_with_colorbar( title,self.file.opd_dry_mass, self.file.contours, self.sld_find_contour.value(), False)
         
+        self.layout().removeWidget(self.mc3)
+        self.mc3=MplCanvas(self.file, self,False, True,width=5, height=4, dpi=100)
+        self.page_layout.addWidget(self.mc3,1,1)
+        self.mc3.draw_contour('selected Part',self.file.raw_image, self.file.contours, self.sld_find_contour.value(), False)
+
+    def select_contour(self):
+        try:
+            if self.file.contours==[]:
+                raise Exception("Please mark first a contour")
+            calc.select_contour(self.file)
+            self.sld_find_contour.setValue(0)
+            self.plot_contours()
+            self.file.contour_nr=0
+            self.btn_find_contour_down.setDisabled(True)
+            self.btn_find_contour_up.setDisabled(True)
+            self.sld_find_contour.setDisabled(True)
+            self.btn_find_contour_tresh_down.setDisabled(True)
+            self.btn_find_contour_tresh_up.setDisabled(True)
+            self.sld_find_contour_tresh.setDisabled(True)
+        except Exception as e:
+            self.error_message(e)
+
     def show_scaled_contours(self):
+            
+            self.file.scalefactor=self.sld_find_contour.value()/100
             self.file.contour_scaled=[]
             self.file.contour_scaled.append(calc.scale_contour(self.file.contours[self.sld_find_contour.value()], self.sld_scale.value()/100))
             self.file.drymass_contour, outside = calc.contour_mass(self.file, self.file.contour_scaled[0])
@@ -334,18 +434,18 @@ class Main(QMainWindow):
             self.lbl_mass_contour_mean.setText("Contour mean in ng: "+str(self.file.contour_outer_mean))
             effective_mass =self.file.drymass_contour-self.file.contour_outer_mean
 
-            self.lbl_mass_contour_effective.setText("Contour effective in ng: "+str(round(effective_mass,5)))
+            self.lbl_mass_contour_effective.setText("<b>Contour effective in ng: </b>"+str(round(effective_mass,5)))
 
             self.layout().removeWidget(self.mc2)
-            self.mc2=MplCanvas(self.file, self, False, width=5, height=4, dpi=100)
+            self.mc2=MplCanvas(self.file, self, False, False, width=5, height=4, dpi=100)
             self.page_layout.addWidget(self.mc2,1,0)
-            title='Mass in ng:'+str(round(self.file.drymass_contour,3))
-            self.mc2.draw_contours_with_colorbar(title ,self.file.opd_dry_mass, self.file.contour_scaled, 0)
+            title='Mass:'+str(round(effective_mass,4))+' ng'
+            self.mc2.draw_contours_with_colorbar(title ,self.file.opd_dry_mass, self.file.contour_scaled, 0, True)
 
             self.layout().removeWidget(self.mc3)
-            self.mc3=MplCanvas(self.file, self, False, width=5, height=4, dpi=100)
+            self.mc3=MplCanvas(self.file, self, False, False, width=5, height=4, dpi=100)
             self.page_layout.addWidget(self.mc3,1,1)
-            self.mc3.draw_contour('selected Part',self.file.raw_image, self.file.contour_scaled, 0)
+            self.mc3.draw_contour('Selected Part',self.file.raw_image, self.file.contour_scaled, 0, True)
 
     def find_contour_tresh_up(self):
         self.sld_find_contour_tresh.setValue(self.sld_find_contour_tresh.value()+1)
@@ -382,12 +482,7 @@ class Main(QMainWindow):
         for sld in self.findChildren(QSlider):
             sld.setDisabled(True)
 
-    def set_to_startvalue(self):
-        self.sld_find_contour.setValue(-1)
-        self.sld_find_contour_tresh.setValue(1)
-        self.sld_scale.setValue(100)
-        self.lbl_mass_total.setText("Mass total [ng]: 0")
-        self.lbl_mass_inside.setText("Mass inside [ng]: 0")
+
 
 
 if __name__ == "__main__":

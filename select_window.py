@@ -13,7 +13,7 @@ class SelectWindow(QWidget):
         self.setWindowTitle("Select File")
 
         self.file =file
-        self.mc = MplCanvas(self, self.file, False, width=50, height=40, dpi=100)
+        self.mc = MplCanvas(self, self.file, False, False, width=50, height=40, dpi=100)
         self.len_sample=len_sample-1
         self.main_window=main_window
 
@@ -51,7 +51,7 @@ class SelectWindow(QWidget):
         self.page_layout.addWidget(self.btn_save_idx_focused_image, 4, 0, alignment=Qt.AlignmentFlag.AlignCenter)
        
     def value_changed(self, i):
-        self.mc.show_focused_image('Raw image', self.file, i)
+        self.mc.show_focused_image('Raw image', self.file.pixel_size, self.file.sample[i])
         self.lbl_idx_of_image.setText(str(i))
         self.idx_focused_image=i
     

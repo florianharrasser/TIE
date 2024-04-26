@@ -4,16 +4,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
-from matplotlib.widgets import RectangleSelector
+from matplotlib.widgets import RectangleSelector, Cursor
 import matplotlib.pyplot as plt
 import cv2
 from matplotlib.colors import LinearSegmentedColormap
-
+from matplotlib_scalebar.scalebar import ScaleBar
 
 
 class MplCanvas(FigureCanvasQTAgg):
 
-    def __init__(self, file, mainWindow, bool_selector,  width=5, height=4, dpi=100):
+    def __init__(self, file, mainWindow, bool_selector, bool_draw,  width=5, height=4, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
         self.file=file
@@ -28,13 +28,46 @@ class MplCanvas(FigureCanvasQTAgg):
                                         spancoords='pixels',
                                         interactive=True)
             plt.connect('key_press_event', self.toggle_selector)
-        
-    def show_focused_image(self, title, file, idx_focused_image):
+
+        if(bool_draw):
+            self.drawing = False
+            self.CS=Cursor(self.axes, useblit=True)
+            self.CS.connect_event('button_press_event', self.on_press)
+            self.CS.connect_event('button_release_event', self.on_release)
+            self.CS.connect_event('motion_notify_event', self.on_motion) 
+
+    def on_release(self, event):
+        if event.button==1:
+            self.drawing=False
+            
+    def on_press(self, event):
+        if event.button == 1:
+            self.drawing = True
+            self.file.draw_x.append(event.xdata)
+            self.file.draw_y.append(event.ydata)
+        if event.button==3:            
+            self.file.draw_x=[]
+            self.file.draw_y=[]
+            self.axes.clear()
+            self.draw()
+            self.drawing=False 
+    
+    def on_motion(self, event):        
+        if self.drawing and event.xdata is not None and event.ydata is not None:
+            self.file.draw_x.append(event.xdata)
+            self.file.draw_y.append(event.ydata)
+            self.axes.scatter(self.file.draw_x, self.file.draw_y, color='red', s=3, marker='o')  
+            self.draw()
+
+    def show_focused_image(self, title, pixel_size, image):
         self.axes.clear()       
-        self.axes.imshow(file.sample[idx_focused_image], cmap=matplotlib.cm.gray, interpolation='nearest')
+        self.axes.imshow(image, cmap=matplotlib.cm.gray, interpolation='nearest')
         self.axes.set_title(title)
         self.axes.set_xlabel(r'Pixel')
         self.axes.set_ylabel(r'Pixel')
+        scalebar_lenght=1*pixel_size*1e6
+        scalebar = ScaleBar(scalebar_lenght, "um", location='lower right', frameon=False, color='white')
+        self.axes.add_artist(scalebar)
         self.draw()
     
     def show_drymass(self, title, file):
@@ -60,39 +93,53 @@ class MplCanvas(FigureCanvasQTAgg):
         if event.key in ['A', 'a'] and not self.RS.active:
             self.RS.set_active(True)
 
-    def draw_contours_with_colorbar(self,title, image, contours, contourIdx):
+    def draw_contours_with_colorbar(self,title, image, contours, contourIdx, contour_bool):
         self.axes.clear()
         image_with_contours = image.copy()
-        cv2.drawContours(image_with_contours, contours=contours, contourIdx=contourIdx, color=np.max(self.file.opd_dry_mass), thickness=2, lineType=cv2.LINE_AA)
-        colors = [(0, 'white'), (0.25, 'blue'), (0.5, 'green'),(0.75, 'yellow'), (1, 'red')]
+        if contour_bool:
+            cv2.drawContours(image_with_contours, contours=contours, contourIdx=contourIdx, color=np.max(self.file.opd_dry_mass), thickness=2, lineType=cv2.LINE_AA)
 
-
-        custom_cmap = LinearSegmentedColormap.from_list('custom_cmap', colors)
-        fig=self.axes.imshow(image_with_contours, cmap=custom_cmap)
+        fig=self.axes.imshow(image_with_contours, cmap='viridis')
         self.axes.set_title(title)
-        self.axes.figure.colorbar(fig, ax=self.axes)
+        
 
-        xticks = np.round(np.round(np.array(self.axes.get_xticks()) * self.file.pixel_size*1e6, 1),1)
-        yticks = np.round(np.round(np.array(self.axes.get_yticks()) * self.file.pixel_size*1e6,1),1)
+        cbar=self.axes.figure.colorbar(fig, ax=self.axes)
+        cbar.set_label("nm")
+    
+        xticks = np.round(np.array(self.axes.get_xticks()) * self.file.pixel_size*1e6,1)
+        yticks = np.round(np.array(self.axes.get_yticks()) * self.file.pixel_size*1e6,1)
+        self.axes.xaxis.set_major_locator(plt.FixedLocator(self.axes.get_xticks()))
+        self.axes.yaxis.set_major_locator(plt.FixedLocator(self.axes.get_yticks()))
         self.axes.set_xticklabels(xticks)
         self.axes.set_yticklabels(yticks)
         self.axes.set_xlabel(r'$\mu m$')
         self.axes.set_ylabel(r'$\mu m$')
+
+        scalebar_lenght=0.1
+        scalebar = ScaleBar(scalebar_lenght, "um", location='lower right', frameon=False, color='white')
+        
+        self.axes.add_artist(scalebar)
         self.draw()
     
-    def draw_contour(self, title, image, contour, idx):
+    def draw_contour(self, title, image, contour, idx, contour_bool):
         self.axes.clear()
         image_with_contours = image.copy()
-        cv2.drawContours(image_with_contours, contours=contour, contourIdx=idx, color=200, thickness=2, lineType=cv2.LINE_AA)
+        if contour_bool:
+            cv2.drawContours(image_with_contours, contours=contour, contourIdx=idx, color=200, thickness=2, lineType=cv2.LINE_AA)
         self.axes.imshow(image_with_contours)
         self.axes.set_title(title)
 
         xticks = (np.array(self.axes.get_xticks()) + self.file.x1).astype(int)
         yticks = (np.array(self.axes.get_yticks()) + self.file.y1).astype(int)
+        self.axes.xaxis.set_major_locator(plt.FixedLocator(self.axes.get_xticks()))
+        self.axes.yaxis.set_major_locator(plt.FixedLocator(self.axes.get_yticks()))
         self.axes.set_xticklabels(xticks)
         self.axes.set_yticklabels(yticks)
         self.axes.set_xlabel(r'Pixel')
         self.axes.set_ylabel(r'Pixel')
+        scalebar_lenght=1*self.file.pixel_size*1e6
+        scalebar = ScaleBar(scalebar_lenght, "um", location='lower right', frameon=False, color='white')
+        self.axes.add_artist(scalebar)
         self.draw()
 
     def show_mask_for_sum(self):
