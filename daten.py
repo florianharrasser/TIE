@@ -1,13 +1,13 @@
 from numpy import ndarray
 
 class Daten():
-    def __init__(self,  filename:str="", edges=None, sample: ndarray=[], drymass_ent:float = 0, drymass_contour:float=0,
+    def __init__(self,  filename:str="", uploaded_files:str=[], edges=None, sample: ndarray=[], drymass_ent:float = 0, drymass_contour:float=0,
                   magnification:float=60, drymass_outer_mean:float=0, pixel_size:float=104e-9, axial_step:float=1e-6,
                   idx_background:int=3,   idx_sample:int=1, idx_focused_image:int = -1, idx_focused_image_calc=-1, 
                   x1:int=-1, y1:int=-1, x2:int=-1, y2:int=-1, OPL_idx_low:int=1, OPL_idx_high:int=1, alpha:float=0.190 * 1e-6, 
                   iteration:int=50, OPL_mixed = None, opd_dry_mass=None, stack=None, background=None, file=None, contours=[], hierarchy = [],
                   raw_image=None,contour_mask=None, contour_scaled=[], contour_outer_mean=[], selected_stack=None, drymass_ent_mean=0,
-                  lbda_TV=1e-5, contour_nr:int=0, treshhold:int=0, scalefactor:int=0, calculation:str="", area:int=0, draw_x=[], draw_y=[]):
+                  lbda_TV=1e-5, contour_nr:int=0, treshhold:int=0, scalefactor:int=0, calculation:str="", area:int=0, draw_x=[], draw_y=[], contour_area=0):
         
         
         self.file = file
@@ -52,3 +52,5 @@ class Daten():
         self.area=area
         self.draw_x=draw_x
         self.draw_y=draw_y
+        self.contour_area=contour_area
+        self.uploaded_files=uploaded_files

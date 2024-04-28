@@ -210,6 +210,12 @@ def select_contour(file):
     # for i in range(len(file.draw_x)):
     #     file.contours.append([file.draw_x[i], file.draw_y[i]])
 
+def calculate_contour_area(file, cont):
+    contour_area=cv2.contourArea(cont)
+    file.contour_area=contour_area*(file.pixel_size*1e6)**2
+    print(file.contour_area)
+
+
 def mixing_tv(file):
     sigma=1
     OPL_lo=calculate_with_tvnotm(file, file.OPL_idx_low, True)

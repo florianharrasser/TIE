@@ -45,12 +45,12 @@ class MplCanvas(FigureCanvasQTAgg):
             self.drawing = True
             self.file.draw_x.append(event.xdata)
             self.file.draw_y.append(event.ydata)
-        if event.button==3:            
-            self.file.draw_x=[]
-            self.file.draw_y=[]
-            self.axes.clear()
-            self.draw()
-            self.drawing=False 
+        # if event.button==3:            
+        #     self.file.draw_x=[]
+        #     self.file.draw_y=[]
+        #     self.axes.clear()
+        #     self.draw()
+        #     self.drawing=False 
     
     def on_motion(self, event):        
         if self.drawing and event.xdata is not None and event.ydata is not None:

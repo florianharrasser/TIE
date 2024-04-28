@@ -14,6 +14,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QAction
 from  MplCanvas import MplCanvas
 from PyQt6.QtCore import Qt
+import os
 
 
 class Main(QMainWindow):
@@ -57,25 +58,35 @@ class Main(QMainWindow):
 
 
         self.lbl_filename=QLabel("Current File: None")
+        self.lbl_filename.setToolTip("This is the name of the selected image")
         self.lbl_focused_image=QLabel("Index focused image: 0")
+        self.lbl_focused_image.setToolTip("This is the index of the focused image")
         self.lbl_OPL_low=QLabel("Index OPL low:")
         self.txt_OPL_low=QLineEdit()
+        self.txt_OPL_low.setToolTip("Enter the index value for calculation using the OPL method")
         self.txt_OPL_low.setFixedSize(30,30)
         self.txt_OPL_low.setText(str(self.file.OPL_idx_low))
         self.lbl_OPL_high=QLabel("Index OPL high:")
         self.txt_OPL_high=QLineEdit()
+        self.txt_OPL_high.setToolTip("Enter the index value for calculation using the OPL method")
         self.txt_OPL_high.setFixedSize(30,30)
         self.txt_OPL_high.setText(str(self.file.OPL_idx_high))
         self.lbl_mass_total=QLabel("Mass total in ng: 0")
-        self.lbl_mass_inside=QLabel("Mass inside cont. in ng: 0")
+        self.lbl_mass_total.setToolTip("This is the mass calculated for the whole image")
+        self.lbl_mass_inside=QLabel("Mass inside contour in ng: 0")
+        self.lbl_mass_inside.setToolTip("This is the mass calculated inside the selected contour")
         self.lbl_mass_contour_mean=QLabel("Contour mean in ng: 0")
+        self.lbl_mass_contour_mean.setToolTip("This is the mean mass directly on the contour")
         self.lbl_mass_contour_effective=QLabel("<b>Contour effective in ng: 0</b>")
+        self.lbl_mass_contour_effective.setToolTip("This is the effective mass inside the contour normalised")
 
         self.btn_calculate_OPL=QPushButton("Calculate OPL")
+        self.btn_calculate_OPL.setToolTip("Use calculation option with FFT")
         self.btn_calculate_OPL.setDisabled(True)
         self.btn_calculate_OPL.clicked.connect(self.show_OPL_plot)
 
         self.btn_calculate_with_tvnorm=QPushButton("Calculate with TV Norm ")
+        self.btn_calculate_with_tvnorm.setToolTip("Use calculation option with regularisation")
         self.btn_calculate_with_tvnorm.setDisabled(True)
         self.btn_calculate_with_tvnorm.clicked.connect(self.show_OPL_plot_tv)
 
@@ -180,32 +191,43 @@ class Main(QMainWindow):
         self.parameter_layout.addWidget(frame3,4,0,3,3)
 
         self.btn_show_background=QPushButton("BG")
+        self.btn_show_background.setToolTip("Show the Background")
         self.btn_show_background.setFixedSize(30,30)
         self.btn_show_background.setDisabled(True)
         self.btn_show_background.clicked.connect(self.show_background)
         self.page_layout.addWidget(self.btn_show_background, 0,2, alignment=Qt.AlignmentFlag.AlignTop)
 
         self.btn_show_raw_image=QPushButton("IM")
+        self.btn_show_raw_image.setToolTip("Show the Image")
         self.btn_show_raw_image.setFixedSize(30,30)
         self.btn_show_raw_image.setDisabled(True)
         self.btn_show_raw_image.clicked.connect(self.show_raw_image)
         self.page_layout.addWidget(self.btn_show_raw_image, 0,2, alignment=Qt.AlignmentFlag.AlignCenter)
 
         self.btn_show_stack=QPushButton("ST")
+        self.btn_show_stack.setToolTip("Show the Stack")
         self.btn_show_stack.setFixedSize(30,30)
         self.btn_show_stack.setDisabled(True)
         self.btn_show_stack.clicked.connect(self.show_stack)
         self.page_layout.addWidget(self.btn_show_stack, 0,2, alignment=Qt.AlignmentFlag.AlignBottom)
 
         self.btn_draw_contour_yourself=QPushButton("Draw Contour by hand")
+        self.btn_draw_contour_yourself.setToolTip("Hit this button to draw the contour by yourself")
         self.btn_draw_contour_yourself.setDisabled(True)
         self.btn_draw_contour_yourself.clicked.connect(self.draw_contour_yourself)
-        self.page_layout.addWidget(self.btn_draw_contour_yourself, 3,0, alignment=Qt.AlignmentFlag.AlignRight)
+        self.page_layout.addWidget(self.btn_draw_contour_yourself, 3,0, alignment=Qt.AlignmentFlag.AlignLeft)
 
         self.btn_select_contour=QPushButton("Select Contour")
+        self.btn_select_contour.setToolTip("Hit this button to choose the drawn points as contour")
         self.btn_select_contour.setDisabled(True)
         self.btn_select_contour.clicked.connect(self.select_contour)
-        self.page_layout.addWidget(self.btn_select_contour, 3,0,alignment=Qt.AlignmentFlag.AlignLeft)
+        self.page_layout.addWidget(self.btn_select_contour, 3,0,alignment=Qt.AlignmentFlag.AlignCenter)
+
+        self.btn_delete_contour=QPushButton("Delete Contour")
+        self.btn_delete_contour.setToolTip("Delete the drawn contourpoints")
+        self.btn_delete_contour.setDisabled(True)
+        self.btn_delete_contour.clicked.connect(self.delete_contour)
+        self.page_layout.addWidget(self.btn_delete_contour, 3,0,alignment=Qt.AlignmentFlag.AlignRight)
 
       
         widget = QWidget()
@@ -221,29 +243,36 @@ class Main(QMainWindow):
             
             #Settings for 'Setting_Window' and display it
             self.setting_window = SettingWindow(self)
-            lifProperties = []            
+            lifProperties = []    
+            self.file.uploaded_files=[]        
 
             for idx, entry in enumerate(self.file.file.image_list):
                 lifProperties.append(f"Index: {idx:<5}Name:{entry['name']:<60}Dimensions: {str(entry['dims']):<40}")
+                self.file.uploaded_files.append(entry['name'])
                 self.setting_window.lbl_status.setText("\n".join(lifProperties))
 
             self.setting_window.show()
-            self.file.filename=""
-            #extracting the filename from path
-            for i in range (len(path)-5, -1, -1):
-                if(path[i] == '/'): 
-                    break
-                
-                self.file.filename=self.file.filename+path[i]        
-            self.file.filename = self.file.filename[::-1] #reversing the filename
-            self.lbl_filename.setText("Current file: "+self.file.filename)
+            # self.file.filename=""
+            # #extracting the filename from path
+            # for i in range (len(path)-5, -1, -1):
+            #     if(path[i] == '/'): 
+            #         break                
+            #     self.file.filename=self.file.filename+path[i]     
+
+            # self.file.filename = self.file.filename[::-1] #reversing the filename
+            # self.lbl_filename.setText("Current file: "+self.file.filename)
+            self.lbl_mass_total.setText("Mass total in ng: 0")
+            self.lbl_mass_inside.setText("Mass inside cont. in ng: 0")
+            self.lbl_mass_contour_mean.setText("Contour mean in ng: 0")
+            self.lbl_mass_contour_effective.setText("<b>Contour effective in ng: 0</b>")
         except Exception as e:
             self.error_message(e)
 
     def save_file(self):
         try:
             if self.file.filename=="": raise Exception ('Error: No file to save! Please ensure that there is a file to save before proceeding.')
-            path, _ = QFileDialog.getSaveFileName(self, "Save File",str(self.file.filename), " csv Files (*.csv) ;; Text Files (*.txt)")
+            file_name = file_name = self.file.filename.replace('/', '-')
+            path, _ = QFileDialog.getSaveFileName(self, "Save File",file_name, " csv Files (*.csv) ;; Text Files (*.txt)") #str(self.file.filename)
             if path:
                 self.mc1.save_figure(path[:-4]+'(rawfile)')
                 self.mc2.save_figure(path[:-4]+'(drymass)')
@@ -266,6 +295,7 @@ class Main(QMainWindow):
                     csv_writer.writerow(["mass inside contour in ng",self.file.drymass_contour])
                     csv_writer.writerow(["mass on contour in ng", self.file.contour_outer_mean])
                     csv_writer.writerow(["mass effective in ng", (self.file.drymass_contour-self.file.contour_outer_mean)])
+                    csv_writer.writerow(["Area of contour in um^2", self.file.contour_area])
                     csv_writer.writerow(["contour area", self.file.area])
                     csv_writer.writerow(["number contour", self.file.contour_nr])
                     csv_writer.writerow(["treshhold", self.file.treshhold])
@@ -393,6 +423,7 @@ class Main(QMainWindow):
     def draw_contour_yourself(self):
         self.file.draw_x=[]
         self.file.draw_y=[]
+
         self.layout().removeWidget(self.mc2)
         self.mc2=MplCanvas(self.file, self, False, True, width=5, height=4, dpi=100)
         self.page_layout.addWidget(self.mc2,1,0)
@@ -420,6 +451,22 @@ class Main(QMainWindow):
             self.sld_find_contour_tresh.setDisabled(True)
         except Exception as e:
             self.error_message(e)
+    
+    def delete_contour (self):
+        self.file.draw_x=[]
+        self.file.draw_y=[]
+        
+
+        self.layout().removeWidget(self.mc2)
+        self.mc2=MplCanvas(self.file, self, False, True, width=5, height=4, dpi=100)
+        self.page_layout.addWidget(self.mc2,1,0)
+        title='Mass:'+str(round(self.file.drymass_contour,3))+' ng'
+        self.mc2.draw_contours_with_colorbar( title,self.file.opd_dry_mass, self.file.contours, self.sld_find_contour.value(), False)
+        
+        self.layout().removeWidget(self.mc3)
+        self.mc3=MplCanvas(self.file, self,False, True,width=5, height=4, dpi=100)
+        self.page_layout.addWidget(self.mc3,1,1)
+        self.mc3.draw_contour('selected Part',self.file.raw_image, self.file.contours, self.sld_find_contour.value(), False)
 
     def show_scaled_contours(self):
             
@@ -433,6 +480,7 @@ class Main(QMainWindow):
             self.lbl_mass_inside.setText("Mass inside cont. in ng: "+str(self.file.drymass_contour))
             self.lbl_mass_contour_mean.setText("Contour mean in ng: "+str(self.file.contour_outer_mean))
             effective_mass =self.file.drymass_contour-self.file.contour_outer_mean
+            calc.calculate_contour_area(self.file, self.file.contours[self.file.contour_nr])
 
             self.lbl_mass_contour_effective.setText("<b>Contour effective in ng: </b>"+str(round(effective_mass,5)))
 
