@@ -226,7 +226,7 @@ class Main(QMainWindow):
         self.btn_select_contour.clicked.connect(self.select_contour)
         self.page_layout.addWidget(self.btn_select_contour, 3,0,alignment=Qt.AlignmentFlag.AlignCenter)
 
-        self.btn_delete_contour=QPushButton("Delete Contour")
+        self.btn_delete_contour=QPushButton("Delete drawn Contour")
         self.btn_delete_contour.setToolTip("Delete the drawn contourpoints")
         self.btn_delete_contour.setDisabled(True)
         self.btn_delete_contour.clicked.connect(self.delete_contour)
@@ -368,7 +368,7 @@ class Main(QMainWindow):
             self.file.OPL_idx_low, self.file.OPL_idx_high = int(self.txt_OPL_low.text()), int(self.txt_OPL_high.text())
             mixing_OPL()
             calc.calculate_drymass_entire(self.file)
-            self.file.contours, self.file.hierarchy = calc.contour_detection(self.file.opd_dry_mass, treshhold=self.sld_find_contour_tresh.value())
+            
             self.contour_detection()
 
             self.enable_all_buttons()
@@ -400,6 +400,7 @@ class Main(QMainWindow):
         self.contour_detection()
 
     def contour_detection(self):
+        self.file.contours, self.file.hierarchy = calc.contour_detection(self.file.opd_dry_mass, treshhold=self.sld_find_contour_tresh.value())
         self.file.contour_nr=self.sld_find_contour.value()
         self.lbl_find_contour.setText("Contour Nr.: "+str(self.file.contour_nr))
         self.lbl_find_contour_tresh.setText("Treshhold: "+str(self.file.treshhold))
@@ -428,9 +429,6 @@ class Main(QMainWindow):
         QMessageBox.critical(self, "Error!", str(message), buttons=QMessageBox.StandardButton.Close,)
 
     def draw_contour_yourself(self):
-        self.file.draw_x=[]
-        self.file.draw_y=[]
-
         self.layout().removeWidget(self.mc2)
         self.mc2=MplCanvas(self.file, self, False, True, width=5, height=4, dpi=100)
         self.page_layout.addWidget(self.mc2,1,0)
@@ -444,63 +442,70 @@ class Main(QMainWindow):
 
     def select_contour(self):
         try:
-            if self.file.contours==[]:
-                raise Exception("Please mark first a contour")
-            calc.select_contour(self.file)
-            self.sld_find_contour.setValue(0)
-            self.plot_contours()
-            self.file.contour_nr=0
-            self.btn_find_contour_down.setDisabled(True)
-            self.btn_find_contour_up.setDisabled(True)
-            self.sld_find_contour.setDisabled(True)
-            self.btn_find_contour_tresh_down.setDisabled(True)
-            self.btn_find_contour_tresh_up.setDisabled(True)
-            self.sld_find_contour_tresh.setDisabled(True)
+            if calc.select_contour(self.file):
+                if self.file.contours==[]:
+                    raise Exception("Please mark first a contour")
+                
+                self.sld_find_contour.setValue(0)
+                self.plot_contours()
+                self.file.contour_nr=0
+                self.btn_find_contour_down.setDisabled(True)
+                self.btn_find_contour_up.setDisabled(True)
+                self.sld_find_contour.setDisabled(True)
+                self.btn_find_contour_tresh_down.setDisabled(True)
+                self.btn_find_contour_tresh_up.setDisabled(True)
+                self.sld_find_contour_tresh.setDisabled(True)
+            
+            self.display_mass()
+
         except Exception as e:
             self.error_message(e)
     
     def delete_contour (self):
+        self.contour_detection()
+        self.enable_all_slider()
+        self.enable_all_buttons()
         self.file.draw_x=[]
         self.file.draw_y=[]
         
-
-        self.layout().removeWidget(self.mc2)
-        self.mc2=MplCanvas(self.file, self, False, True, width=5, height=4, dpi=100)
-        self.page_layout.addWidget(self.mc2,1,0)
-        title='Mass:'+str(round(self.file.drymass_contour,3))+' ng'
-        self.mc2.draw_contours_with_colorbar( title,self.file.opd_dry_mass, self.file.contours, self.sld_find_contour.value(), False)
+        # self.layout().removeWidget(self.mc2)
+        # self.mc2=MplCanvas(self.file, self, False, True, width=5, height=4, dpi=100)
+        # self.page_layout.addWidget(self.mc2,1,0)
+        # title='Mass:'+str(round(self.file.drymass_contour,3))+' ng'
+        # self.mc2.draw_contours_with_colorbar( title,self.file.opd_dry_mass, self.file.contours, self.sld_find_contour.value(), False)
         
-        self.layout().removeWidget(self.mc3)
-        self.mc3=MplCanvas(self.file, self,False, True,width=5, height=4, dpi=100)
-        self.page_layout.addWidget(self.mc3,1,1)
-        self.mc3.draw_contour('selected Part',self.file.raw_image, self.file.contours, self.sld_find_contour.value(), False)
+        # self.layout().removeWidget(self.mc3)
+        # self.mc3=MplCanvas(self.file, self,False, True,width=5, height=4, dpi=100)
+        # self.page_layout.addWidget(self.mc3,1,1)
+        # self.mc3.draw_contour('selected Part',self.file.raw_image, self.file.contours, self.sld_find_contour.value(), False)
+
+    def display_mass(self):            
+        self.file.scalefactor=self.sld_find_contour.value()/100
+        self.file.contour_scaled=[]
+        self.file.contour_scaled.append(calc.scale_contour(self.file.contours[self.sld_find_contour.value()], self.sld_scale.value()/100))
+        self.file.drymass_contour, outside = calc.contour_mass(self.file, self.file.contour_scaled[0])
+        self.file.contour_outer_mean=calc.contour_mean(self.file, self.file.contour_scaled[0])
+        self.lbl_scale.setText("Scale: "+str(self.sld_scale.value()/100))
+        self.lbl_mass_total.setText("Mass total in ng: "+str(self.file.drymass_ent))
+        self.lbl_mass_inside.setText("Mass inside cont. in ng: "+str(self.file.drymass_contour))
+        self.lbl_mass_contour_mean.setText("Contour mean in ng: "+str(self.file.contour_outer_mean))
+        effective_mass =self.file.drymass_contour-self.file.contour_outer_mean
+        calc.calculate_contour_area(self.file, self.file.contours[self.file.contour_nr])
+        self.lbl_mass_contour_effective.setText("<b>Contour effective in ng: </b>"+str(round(effective_mass,5)))
 
     def show_scaled_contours(self):
-            
-            self.file.scalefactor=self.sld_find_contour.value()/100
-            self.file.contour_scaled=[]
-            self.file.contour_scaled.append(calc.scale_contour(self.file.contours[self.sld_find_contour.value()], self.sld_scale.value()/100))
-            self.file.drymass_contour, outside = calc.contour_mass(self.file, self.file.contour_scaled[0])
-            self.file.contour_outer_mean=calc.contour_mean(self.file, self.file.contour_scaled[0])
-            self.lbl_scale.setText("Scale: "+str(self.sld_scale.value()/100))
-            self.lbl_mass_total.setText("Mass total in ng: "+str(self.file.drymass_ent))
-            self.lbl_mass_inside.setText("Mass inside cont. in ng: "+str(self.file.drymass_contour))
-            self.lbl_mass_contour_mean.setText("Contour mean in ng: "+str(self.file.contour_outer_mean))
-            effective_mass =self.file.drymass_contour-self.file.contour_outer_mean
-            calc.calculate_contour_area(self.file, self.file.contours[self.file.contour_nr])
+        self.display_mass()
+        effective_mass =self.file.drymass_contour-self.file.contour_outer_mean
+        self.layout().removeWidget(self.mc2)
+        self.mc2=MplCanvas(self.file, self, False, False, width=5, height=4, dpi=100)
+        self.page_layout.addWidget(self.mc2,1,0)
+        title='Mass:'+str(round(effective_mass,4))+' ng'
+        self.mc2.draw_contours_with_colorbar(title ,self.file.opd_dry_mass, self.file.contour_scaled, 0, True)
 
-            self.lbl_mass_contour_effective.setText("<b>Contour effective in ng: </b>"+str(round(effective_mass,5)))
-
-            self.layout().removeWidget(self.mc2)
-            self.mc2=MplCanvas(self.file, self, False, False, width=5, height=4, dpi=100)
-            self.page_layout.addWidget(self.mc2,1,0)
-            title='Mass:'+str(round(effective_mass,4))+' ng'
-            self.mc2.draw_contours_with_colorbar(title ,self.file.opd_dry_mass, self.file.contour_scaled, 0, True)
-
-            self.layout().removeWidget(self.mc3)
-            self.mc3=MplCanvas(self.file, self, False, False, width=5, height=4, dpi=100)
-            self.page_layout.addWidget(self.mc3,1,1)
-            self.mc3.draw_contour('Selected Part',self.file.raw_image, self.file.contour_scaled, 0, True)
+        self.layout().removeWidget(self.mc3)
+        self.mc3=MplCanvas(self.file, self, False, False, width=5, height=4, dpi=100)
+        self.page_layout.addWidget(self.mc3,1,1)
+        self.mc3.draw_contour('Selected Part',self.file.raw_image, self.file.contour_scaled, 0, True)
 
     def find_contour_tresh_up(self):
         self.sld_find_contour_tresh.setValue(self.sld_find_contour_tresh.value()+1)

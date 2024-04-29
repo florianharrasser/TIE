@@ -89,7 +89,6 @@ class SettingWindow(QWidget):
                 self.file.filename=""
                 self.file.filename=self.file.uploaded_files[self.file.idx_sample]
                 self.main_window.lbl_filename.setText("Current file: "+self.file.filename)
-                print(self.file.filename)
                 self.main_window.lbl_focused_image.setText("Index focused image: "+str(self.file.idx_focused_image))
                 self.main_window.btn_show_select_window.setDisabled(False)
                 self.main_window.btn_show_raw_image.setDisabled(False)

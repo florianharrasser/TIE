@@ -96,7 +96,6 @@ def calculate_drymass_entire(file):
     outer_mean = np.mean([OPD_dry_mass[0:outer_slab,:].mean(),OPD_dry_mass[-outer_slab:-1,:].mean(),
                           OPD_dry_mass[:,0:outer_slab].mean(),OPD_dry_mass[:,-outer_slab:-1].mean()])
 
-    print('mean in outer slab of OPD = %.2f'%outer_mean)
     OPD_dry_mass -= outer_mean
 
     sigma = OPD_dry_mass/file.alpha
@@ -105,7 +104,6 @@ def calculate_drymass_entire(file):
 
     file.drymass_ent= np.round(mass,5)
     file.drymass_ent_mean=np.round((outer_mean/file.alpha)*file.pixel_size**2 ,5)
-    print("mass insg: ", mass)
     file.opd_dry_mass = OPD_dry_mass.astype(np.float64)
 
 def contour_detection(image, treshhold):
@@ -188,8 +186,7 @@ def contour_mean(file, contour):
         
         return np.round(outer_mean/file.alpha*file.pixel_size**2,5)
 
-def calculate_with_tvnotm(file, m:int, bool):   
-        print("TVNORM START!")     
+def calculate_with_tvnotm(file, m:int, bool):
         if bool:
             file.selected_stack = file.stack[:,file.y1:file.y2,file.x1:file.x2].copy()
             file.raw_image=file.sample[file.idx_focused_image][file.y1:file.y2,file.x1:file.x2].copy()
@@ -205,15 +202,16 @@ def calculate_with_tvnotm(file, m:int, bool):
         return result*file.axial_step/file.pixel_size
 
 def select_contour(file):
+    if(file.draw_x ==[] or file.draw_y==[]): return False
     file.contours=[]
     file.contours = [np.column_stack((file.draw_x, file.draw_y)).reshape((-1, 1, 2)).astype(np.int32)]
+    return True
     # for i in range(len(file.draw_x)):
     #     file.contours.append([file.draw_x[i], file.draw_y[i]])
 
 def calculate_contour_area(file, cont):
     contour_area=cv2.contourArea(cont)
     file.contour_area=contour_area*(file.pixel_size*1e6)**2
-    print(file.contour_area)
 
 
 def mixing_tv(file):
