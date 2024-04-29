@@ -7,7 +7,6 @@ from matplotlib.figure import Figure
 from matplotlib.widgets import RectangleSelector, Cursor
 import matplotlib.pyplot as plt
 import cv2
-from matplotlib.colors import LinearSegmentedColormap
 from matplotlib_scalebar.scalebar import ScaleBar
 
 
@@ -146,4 +145,17 @@ class MplCanvas(FigureCanvasQTAgg):
         self.axes.clear()
         self.axes.imshow(self.file.contour_mask)
         self.axes.set_title('mask')
+        self.draw()
+    
+    def evaluation(self, data, title):
+        self.axes.clear()
+        x_points = np.arange(len(data))
+
+        self.axes.scatter(x_points, data)
+
+        self.axes.grid(alpha=0.2)
+        self.axes.set_xlabel('Cell')
+        self.axes.set_ylabel('Mass/Area in ng/um^2')
+        self.axes.set_title(title)
+
         self.draw()

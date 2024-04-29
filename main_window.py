@@ -3,6 +3,7 @@ import csv
 from daten import Daten
 from setting_window import SettingWindow
 from select_window import SelectWindow
+from evaluation_window import EvaluationWindow
 import calculation as calc
 from readlif.reader import LifFile
 import matplotlib
@@ -14,7 +15,6 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QAction
 from  MplCanvas import MplCanvas
 from PyQt6.QtCore import Qt
-import os
 
 
 class Main(QMainWindow):
@@ -55,6 +55,9 @@ class Main(QMainWindow):
         self.toolBar.addAction(self.btn_show_setting_window)
 
 
+        self.btn_show_evaluation_window=QAction("Evaluation")
+        self.btn_show_evaluation_window.triggered.connect(self.show_evaluation_window)
+        self.toolBar.addAction(self.btn_show_evaluation_window)
 
 
         self.lbl_filename=QLabel("Current File: None")
@@ -327,6 +330,10 @@ class Main(QMainWindow):
         self.select_window = SelectWindow(self.file, self, len(self.file.sample))
         self.select_window.value_changed(self.file.idx_focused_image)
         self.select_window.show()
+
+    def show_evaluation_window (self):
+        self.evaluation_window=EvaluationWindow()
+        self.evaluation_window.show()
 
     def show_background(self):
             self.layout().removeWidget(self.mc1)
