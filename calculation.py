@@ -201,11 +201,10 @@ def calculate_with_tvnotm(file, m:int, bool):
         result = tm.solve_tie(dI_dz, maxiter=file.iteration, lambda_tv=file.lbda_TV)
         return result*file.axial_step/file.pixel_size
 
-def select_contour(file):
-    if(file.draw_x ==[] or file.draw_y==[]): return False
-    file.contours=[]
-    file.contours = [np.column_stack((file.draw_x, file.draw_y)).reshape((-1, 1, 2)).astype(np.int32)]
-    return True
+def select_contour(x, y, input_contour):
+    if(x ==[] or y==[]): return input_contour
+    select_contour = [np.column_stack((x, y)).reshape((-1, 1, 2)).astype(np.int32)]
+    return select_contour
     # for i in range(len(file.draw_x)):
     #     file.contours.append([file.draw_x[i], file.draw_y[i]])
 

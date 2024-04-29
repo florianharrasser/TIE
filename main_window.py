@@ -355,6 +355,8 @@ class Main(QMainWindow):
 
     def _show_OPL_plot_default(self, mixing_OPL):
         try:
+            self.file.draw_x=[]
+            self.file.draw_y=[]
             self.lbl_mass_total.setText("Mass total in ng: 0")
             self.lbl_mass_inside.setText("Mass inside cont. in ng: 0")
             self.lbl_mass_contour_mean.setText("Contour mean in ng: 0")
@@ -436,18 +438,21 @@ class Main(QMainWindow):
         self.mc2.draw_contours_with_colorbar( title,self.file.opd_dry_mass, self.file.contours, self.sld_find_contour.value(), False)
         
         self.layout().removeWidget(self.mc3)
-        self.mc3=MplCanvas(self.file, self,False, True,width=5, height=4, dpi=100)
+        self.mc3=MplCanvas(self.file, self,False, True, width=5, height=4, dpi=100)
         self.page_layout.addWidget(self.mc3,1,1)
         self.mc3.draw_contour('selected Part',self.file.raw_image, self.file.contours, self.sld_find_contour.value(), False)
 
     def select_contour(self):
         try:
-            if calc.select_contour(self.file):
-                if self.file.contours==[]:
-                    raise Exception("Please mark first a contour")
-                
+            self.file.contours=calc.select_contour(self.file.draw_x, self.file.draw_y, self.file.contours)
+   
+            if self.file.draw_x!=[]:
+                self.sld_find_contour.valueChanged.disconnect()
                 self.sld_find_contour.setValue(0)
-                self.plot_contours()
+                self.sld_find_contour.valueChanged.connect(self.contour_detection)
+
+
+                #self.plot_contours()
                 self.file.contour_nr=0
                 self.btn_find_contour_down.setDisabled(True)
                 self.btn_find_contour_up.setDisabled(True)
@@ -456,7 +461,7 @@ class Main(QMainWindow):
                 self.btn_find_contour_tresh_up.setDisabled(True)
                 self.sld_find_contour_tresh.setDisabled(True)
             
-            self.display_mass()
+            self.show_scaled_contours()
 
         except Exception as e:
             self.error_message(e)
@@ -483,6 +488,7 @@ class Main(QMainWindow):
         self.file.scalefactor=self.sld_find_contour.value()/100
         self.file.contour_scaled=[]
         self.file.contour_scaled.append(calc.scale_contour(self.file.contours[self.sld_find_contour.value()], self.sld_scale.value()/100))
+        print(self.file.contour_scaled)
         self.file.drymass_contour, outside = calc.contour_mass(self.file, self.file.contour_scaled[0])
         self.file.contour_outer_mean=calc.contour_mean(self.file, self.file.contour_scaled[0])
         self.lbl_scale.setText("Scale: "+str(self.sld_scale.value()/100))
