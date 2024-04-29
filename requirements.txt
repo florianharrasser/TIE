@@ -1,8 +1,9 @@
 jax==0.4.25
 matplotlib==3.8.3
+matplotlib_scalebar==0.8.1
 numpy==1.24.2
 opencv_python==4.9.0.80
-PyQt6==6.6.1
+PyQt6==6.7.0
 PyQt6_sip==13.6.0
 readlif==0.6.5
-scipy==1.12.0
+scipy==1.13.0
