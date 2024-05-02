@@ -159,3 +159,9 @@ class MplCanvas(FigureCanvasQTAgg):
         self.axes.set_title(title)
 
         self.draw()
+
+    def plot_watershed(self,image):
+        self.axes.clear()
+        self.axes.imshow(image)
+        self.axes.set_title('watershed')
+        self.draw()

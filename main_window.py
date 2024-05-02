@@ -340,6 +340,12 @@ class Main(QMainWindow):
             self.mc1=MplCanvas(self.file, self, True, False, width=5, height=4, dpi=100)
             self.page_layout.addWidget(self.mc1,0,1)   
             self.mc1.show_focused_image('Background Idx 1', self.file.pixel_size, self.file.background[1])
+        
+        # image=calc.watershed(self.file, self.sld_find_contour_tresh.value())
+        # self.layout().removeWidget(self.mc1)
+        # self.mc1=MplCanvas(self.file, self, True, False, width=5, height=4, dpi=100)
+        # self.page_layout.addWidget(self.mc1,0,1)   
+        # self.mc1.plot_watershed(image)
 
     def show_raw_image(self):
         self.layout().removeWidget(self.mc1)
@@ -488,7 +494,6 @@ class Main(QMainWindow):
         self.file.scalefactor=self.sld_find_contour.value()/100
         self.file.contour_scaled=[]
         self.file.contour_scaled.append(calc.scale_contour(self.file.contours[self.sld_find_contour.value()], self.sld_scale.value()/100))
-        print(self.file.contour_scaled)
         self.file.drymass_contour, outside = calc.contour_mass(self.file, self.file.contour_scaled[0])
         self.file.contour_outer_mean=calc.contour_mean(self.file, self.file.contour_scaled[0])
         self.lbl_scale.setText("Scale: "+str(self.sld_scale.value()/100))
