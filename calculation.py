@@ -2,7 +2,8 @@ import numpy as np
 import cv2
 from tie_admm import TIE_ADMM
 from scipy.optimize import curve_fit
-import blur_image
+from daten import file
+from state import State
 
 def find_focused_image(file):    
     gaussian = lambda x, x0, sigma: np.exp(-(x-x0)**2/(2*sigma**2))
@@ -17,43 +18,37 @@ def find_focused_image(file):
     file.idx_focused_image_calc = np.argmin(width)
     file.idx_focused_image= file.idx_focused_image_calc
 
-def mixing(file):
-    sigma=1
-    OPL_lo=calculate_phase(file, file.OPL_idx_low, True)
-    OPL_hi=calculate_phase(file, file.OPL_idx_high, False)
-
-    gaussian2D = lambda x, y, sigma: np.exp(-((x)**2/(2*sigma**2) + (y)**2/(2*sigma**2)))
-
-    Nx,Ny = OPL_lo.shape
-    x = np.arange(Nx) - np.floor(Nx/2)
-    y = np.arange(Ny) - np.floor(Ny/2)
-    Y,X = np.meshgrid(y,x)
-
-    LP_filt = np.fft.ifftshift(gaussian2D(X,Y,sigma))
-       
-    F_hi = np.fft.fft2(OPL_hi)
-    F_lo = np.fft.fft2(OPL_lo)
-
-    F_mix = LP_filt * F_lo + (1-LP_filt) * F_hi
-    
-    file.OPL_mixed = np.real(np.fft.ifft2(F_mix))
-
 def calculate_background_sample_stack(file):        
-    bg_container = file.file.get_image(file.idx_background) #idx 3 should be the bg images z-stack
-    sample_container = file.file.get_image(file.idx_sample) #idx 1 should be the sample images z-stack
+    bg_container = file.file.get_image(file.idx_background)
+    sample_container = file.file.get_image(file.idx_sample)
 
     file.sample = np.asarray([np.asarray(i) for i in sample_container.get_iter_z(t=0, c=0)])
     file.background = np.asarray([np.asarray(i) for i in bg_container.get_iter_z(t=0, c=0)])
     file.stack = file.sample/file.background
     find_focused_image(file)
 
-def calculate_phase(file, m:int, bool):
-    if bool:
+def calculate_opl_tv():
         file.selected_stack = file.stack[:,file.y1:file.y2,file.x1:file.x2].copy()
-        file.raw_image=file.sample[1][file.y1:file.y2,file.x1:file.x2].copy()
+        file.raw_image=file.sample[file.idx_focused_image][file.y1:file.y2,file.x1:file.x2].copy()
 
-    n1 = file.idx_focused_image - m
-    n2 = file.idx_focused_image + m 
+        n_img,nx,ny=file.selected_stack.shape
+        n1 = file.idx_focused_image - file.axial_separation
+        n2 = file.idx_focused_image + file.axial_separation
+        I1 = file.selected_stack[n1]
+        I2 = file.selected_stack[n2]
+        dI_dz = -(I1 - I2)/np.abs(n2-n1)
+        tm = TIE_ADMM(nx,ny)
+        result = tm.solve_tie(dI_dz, maxiter=file.iteration, lambda_tv=file.lbda_TV)
+        OPL=result*file.axial_step/file.pixel_size
+        file.opd=np.array(OPL, dtype=np.float32)
+        file.calculation_option="Tv Norm"
+
+def calculate_opl_fft():    
+    file.selected_stack = file.stack[:,file.y1:file.y2,file.x1:file.x2].copy()
+    file.raw_image=file.sample[1][file.y1:file.y2,file.x1:file.x2].copy()
+
+    n1 = file.idx_focused_image - file.axial_separation
+    n2 = file.idx_focused_image + file.axial_separation 
 
     dz = np.abs(n2-n1) * file.axial_step    
     rows = slice(0,file.selected_stack.shape[1])
@@ -81,39 +76,35 @@ def calculate_phase(file, m:int, bool):
     OPL = np.real(np.fft.ifft2(F_OPL))
     OPL -= np.min(OPL)
     OPL= np.fft.ifftshift(OPL)*1e9
-    return OPL
+    file.opd=OPL
+    file.calculation_option="FFT"
 
 def divergence(gx,gy):
     return (np.gradient(gx)[0] + np.gradient(gy)[1])
 
-def calculate_drymass_entire(file):
-    outer_slab = 2
-    pm = 1
-    OPD_dry_mass = pm*file.OPL_mixed[:,:].copy()
+def opl_dry_mass():
+    outer_slab = 2 #thickness to consider
+    OPD_dry_mass = file.opd[:,:].copy()
 
     #remove residual offsets by substacting mean of outer pixeles in area of interest
-    outer_slab = 2 #thickness to consider 
     outer_mean = np.mean([OPD_dry_mass[0:outer_slab,:].mean(),OPD_dry_mass[-outer_slab:-1,:].mean(),
                           OPD_dry_mass[:,0:outer_slab].mean(),OPD_dry_mass[:,-outer_slab:-1].mean()])
 
     OPD_dry_mass -= outer_mean
-
     sigma = OPD_dry_mass/file.alpha
     mass = np.sum(sigma)*file.pixel_size**2 #dry mass in gramm
 
-
-    file.drymass_ent= np.round(mass,5)
-    file.drymass_ent_mean=np.round((outer_mean/file.alpha)*file.pixel_size**2 ,5)
     file.opd_dry_mass = OPD_dry_mass.astype(np.float64)
+    file.entire_mass_mean=np.round((outer_mean/file.alpha)*file.pixel_size**2 ,5)
+    file.entire_mass= np.round(mass,5)
 
-def contour_detection(image, treshhold):
-    img_gray = image.astype(np.uint8).copy()
-    ret, thresh = cv2.threshold(img_gray, treshhold, maxval=np.amax(image), type=cv2.THRESH_BINARY_INV)
+def contour_detection():
+    img_gray = file.opd_dry_mass.astype(np.uint8).copy()
+    ret, thresh = cv2.threshold(img_gray, file.threshold, maxval=np.amax(file.opd_dry_mass), type=cv2.THRESH_BINARY_INV)
     contour, hierarchy = cv2.findContours(image=thresh, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
 
     file_contour = []
     file_hierarchy = []
-    # return contour, hierarchy
 
     for i, cont in enumerate(contour):
         area=cv2.contourArea(cont) 
@@ -121,153 +112,78 @@ def contour_detection(image, treshhold):
             file_contour.append(cont)
             file_hierarchy.append(hierarchy[0][i])
 
-    return file_contour, file_hierarchy
+    file.contours, file.hierarchy = file_contour, file_hierarchy
 
-def canny_edge_detection(image, low_treshhold, high_treshhold, sigma, low_treshhold_e, high_treshhold_e):
-    img=image.copy()
-    blurred_image = blur_image.GaussianBlur(img, sigma)
-    edges = cv2.Canny(blurred_image.astype(np.uint8),low_treshhold, high_treshhold)
-    (thresh, blackEdges) = cv2.threshold(edges, low_treshhold_e, high_treshhold_e, cv2.THRESH_BINARY_INV)
-    return edges, blackEdges
-
-def scale_contour(contour, scale):
-    
-    M = cv2.moments(contour)
+def scale_contour():
+    file.contour_scaled=file.contours[file.contour_index]    
+    M = cv2.moments(file.contour_scaled)
     cx = int(M['m10']/M['m00'])
     cy = int(M['m01']/M['m00'])
 
-    contour_norm = contour - [cx, cy]
-    contour_scaled = contour_norm * scale
+    contour_norm = file.contour_scaled - [cx, cy]
+    contour_scaled = contour_norm * file.scalefactor
     contour_scaled = contour_scaled + [cx, cy]
+    
+    file.contour_scaled=[]
+    file.contour_scaled.append(contour_scaled.astype(np.int32)) 
 
-    return contour_scaled.astype(np.int32) 
+def contour_mass():
+    mass_inside=0
+    # contours=[]    
+    # contours=(file.selected_contour)
 
-def contour_mass(file, contour):
-    contours=[]
-    contours.append(contour)
     #creating a mask
-    mask=np.zeros(file.OPL_mixed.shape, np.uint8)
-    file.contour_mask = np.zeros(file.raw_image.shape, np.float64)
+    mask=np.zeros(file.opd_dry_mass.shape, np.uint8)
+    file.contour_mask = np.zeros(file.opd_dry_mass.shape, np.float64)
     mask.fill(255)
 
-    cv2.drawContours(mask, contours, 0, (0,30,0), thickness=5)
+    #filling the mask
+    cv2.drawContours(mask, file.selected_contour, 0, (0,30,0), thickness=5)
     cv2.floodFill(mask, None, (0,0), 80)
     cv2.floodFill(mask, None, (len(mask[0])-1,0), 80)
     cv2.floodFill(mask, None, (0,len(mask)-1), 80)
     cv2.floodFill(mask, None, (len(mask[0])-1, len(mask)-1), 80)
 
-    mass_inside=0
-    mass_outside=0
-
-    for i in range(len(file.OPL_mixed[0])):
-        for j in range(len(file.OPL_mixed)):
+    #calculating the mass inside the mask
+    for i in range(len(file.opd_dry_mass[0])):
+        for j in range(len(file.opd_dry_mass)):
             if mask[j][i]==255:
                 file.contour_mask[j][i]=file.opd_dry_mass[j][i]
                 mass_inside= mass_inside+(file.opd_dry_mass[j][i])
-            else:
-                mass_outside=mass_outside+(file.opd_dry_mass[j][i])
 
-    mass_inside=np.round((mass_inside/file.alpha)*file.pixel_size**2, 5)
-    mass_outside=np.round((mass_outside/file.alpha)*file.pixel_size**2, 5)
-    return mass_inside, mass_outside
+    file.contour_inside_mass=np.round((mass_inside/file.alpha)*file.pixel_size**2, 5)
 
-def contour_mean(file, contour):
-        contours=[]
-        contours.append(contour)
-        mask=file.raw_image.copy()
-        cv2.drawContours(mask, contours, 0, 255)
-
-        outer_mean=0
-
-        for i in range(len(file.raw_image[0])):
-            for j in range(len(file.raw_image)):
-                if mask[j][i]==255:
-                    outer_mean = outer_mean+file.OPL_mixed[j][i]
+def contourline_mean_mass():
+        contourline_mass=0
         
-        return np.round(outer_mean/file.alpha*file.pixel_size**2,5)
+        #drawing the contour as 'mask' to iterate over it
+        mask=file.opd_dry_mass.copy()
+        cv2.drawContours(mask, file.selected_contour, 0, 255)        
 
-def calculate_with_tvnotm(file, m:int, bool):
-        if bool:
-            file.selected_stack = file.stack[:,file.y1:file.y2,file.x1:file.x2].copy()
-            file.raw_image=file.sample[file.idx_focused_image][file.y1:file.y2,file.x1:file.x2].copy()
+        #calculating the mass of the contourline
+        for i in range(len(file.opd_dry_mass[0])):
+            for j in range(len(file.opd_dry_mass)):
+                if mask[j][i]==255:
+                    contourline_mass += file.opd_dry_mass[j][i]
 
-        n_img,nx,ny=file.selected_stack.shape
-        n1 = file.idx_focused_image - m
-        n2 = file.idx_focused_image + m
-        I1 = file.selected_stack[n1]
-        I2 = file.selected_stack[n2]
-        dI_dz = -(I1 - I2)/np.abs(n2-n1)
-        tm = TIE_ADMM(nx,ny)
-        result = tm.solve_tie(dI_dz, maxiter=file.iteration, lambda_tv=file.lbda_TV)
-        return result*file.axial_step/file.pixel_size
+        outer_mean=contourline_mass/len(mask)#not sure about this? is it correct to calc the mean like this?
 
-def select_contour(x, y, input_contour):
-    if(x ==[] or y==[]): return input_contour
-    select_contour = [np.column_stack((x, y)).reshape((-1, 1, 2)).astype(np.int32)]
-    return select_contour
-    # for i in range(len(file.draw_x)):
-    #     file.contours.append([file.draw_x[i], file.draw_y[i]])
+        file.contourline_mean_mass=np.round((outer_mean/file.alpha)*file.pixel_size**2,5)
 
-def calculate_contour_area(file, cont):
-    contour_area=cv2.contourArea(cont)
+#Selection of the contour based on whether the contour is drawn, scaled or predefined
+def select_contour():
+    if(file.state==State.DEFAULT):
+        file.selected_contour=[]
+        file.selected_contour.append(file.contours[file.contour_index])
+    elif (file.state==State.SCALED):
+        file.selected_contour=[]
+        file.selected_contour=file.contour_scaled
+    elif file.state==State.STORED:
+        file.selected_contour=file.stored_contour    
+    else:
+        file.selected_contour=[np.column_stack((file.draw_x, file.draw_y)).reshape((-1, 1, 2)).astype(np.int32)]
+    calculate_contour_area()
+
+def calculate_contour_area():
+    contour_area=cv2.contourArea(file.selected_contour[0])
     file.contour_area=contour_area*(file.pixel_size*1e6)**2
-
-
-def mixing_tv(file):
-    sigma=1
-    OPL_lo=calculate_with_tvnotm(file, file.OPL_idx_low, True)
-    OPL_hi=calculate_with_tvnotm(file, file.OPL_idx_high, False)
-
-    gaussian2D = lambda x, y, sigma: np.exp(-((x)**2/(2*sigma**2) + (y)**2/(2*sigma**2)))
-
-    Nx,Ny = OPL_lo.shape
-    x = np.arange(Nx) - np.floor(Nx/2)
-    y = np.arange(Ny) - np.floor(Ny/2)
-    Y,X = np.meshgrid(y,x)
-
-    LP_filt = np.fft.ifftshift(gaussian2D(X,Y,sigma))
-       
-    F_hi = np.fft.fft2(OPL_hi)
-    F_lo = np.fft.fft2(OPL_lo)
-
-    F_mix = LP_filt * F_lo + (1-LP_filt) * F_hi
-    
-    file.OPL_mixed = np.real(np.fft.ifft2(F_mix))
-
-def watershed (file, treshhold):
-    img=file.sample[file.idx_focused_image]
-    ret, thresh = cv2.threshold(img,treshhold, np.amax(img),cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
-
-    # noise removal
-    kernel = np.ones((3,3),np.uint8)
-    opening = cv2.morphologyEx(thresh,cv2.MORPH_OPEN,kernel, iterations = 2)
-    opening = opening.astype(np.uint8)
-    
-    # sure background area
-    sure_bg = cv2.dilate(opening,kernel,iterations=3)
-    
-    # Finding sure foreground area
-    dist_transform = cv2.distanceTransform(opening,cv2.DIST_L2,5)
-    ret, sure_fg = cv2.threshold(dist_transform,0.7*dist_transform.max(),255,0)
-    
-    # Finding unknown region
-    sure_fg = np.uint8(sure_fg)
-    unknown = cv2.subtract(sure_bg,sure_fg)
-
-    # Marker labelling
-    ret, markers = cv2.connectedComponents(sure_fg)
-    
-    # Add one to all labels so that sure background is not 0, but 1
-    markers = markers+1
-
-    markers[unknown==255] = 0
-
-    img = np.uint8(img)
-    img_color = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-
-    markers = cv2.watershed(img_color,markers)
-    print("Shape of img:", img.shape)
-    print("Shape of markers:", markers.shape)
-
-    img_color[markers == -1] = [255,0,0]
-    return img

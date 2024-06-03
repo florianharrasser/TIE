@@ -1,56 +1,96 @@
 from numpy import ndarray
-
+from state import State
+    
 class Daten():
-    def __init__(self,  filename:str="", uploaded_files:str=[], edges=None, sample: ndarray=[], drymass_ent:float = 0, drymass_contour:float=0,
-                  magnification:float=60, drymass_outer_mean:float=0, pixel_size:float=104e-9, axial_step:float=1e-6,
-                  idx_background:int=3,   idx_sample:int=1, idx_focused_image:int = -1, idx_focused_image_calc=-1, 
-                  x1:int=-1, y1:int=-1, x2:int=-1, y2:int=-1, OPL_idx_low:int=1, OPL_idx_high:int=1, alpha:float=0.190 * 1e-6, 
-                  iteration:int=50, OPL_mixed = None, opd_dry_mass=None, stack=None, background=None, file=None, contours=[], hierarchy = [],
-                  raw_image=None,contour_mask=None, contour_scaled=[], contour_outer_mean=[], selected_stack=None, drymass_ent_mean=0,
-                  lbda_TV=1e-5, contour_nr:int=0, treshhold:int=0, scalefactor:int=0, calculation:str="", area:int=0, draw_x=[], draw_y=[], contour_area=0):
+
+    def __init__(self):
         
+        #self = file #file=None
+        self.reset()
+    
+    def reset(self):
+        self.file=None
+        self.filename:str=""
+        self.magnification=60
+        self.pixel_size:float=104e-9
+        self.axial_step:float=1e-6
+        self.idx_background=3
+        self.idx_sample=1
+        self.background=None        
+        self.sample:ndarray=[]
+        self.idx_focused_image:int=-1
+        self.idx_focused_image_calc=-1  
+        self.x1:int=-1
+        self.y1:int=-1
+        self.x2:int=-1
+        self.y2:int=-1
+        self.opd:ndarray=None
+        self.opd_dry_mass=None
+        self.stack=None
+        self.axial_separation:int=1
+        self.OPL_idx_high:int=1
+        self.entire_mass:float=0
+        self.entire_mass_mean:float=0
+        self.contour_inside_mass:float=0
+        self.contourline_mean_mass:float=0
+        self.edges=None
+        self.hierarchy=[]
+        self.contours=[]
+        self.raw_image=None
+        self.contour_mask=None
+        self.contour_scaled=[]
+        #self.contour_outer_mean:float=0
+        self.alpha=0.190*1e-6
+        self.selected_stack=None
+        self.selected_contour=None        
+        self.lbda_TV:float=1e-5
+        self.iteration:int=50
+        self.contour_index:int=0
+        self.threshold:int=0
+        self.scalefactor:int=1
+        self.calculation_option:str=""
+        self.draw_x=[]
+        self.draw_y=[]
+        self.contour_area=0
+        self.uploaded_files=[]
+        self.stored_contour=None
+        self.recall_bool=False
+        self.state:State=State.DEFAULT
+    
+
+
+    @property
+    def csv_dict(self):
+        return {
+            "magnification": self.magnification,
+            "pixel Size in m": self.pixel_size,
+            "axial stepin m": self.axial_step,
+            "alpha": self.alpha,
+            "lbda_TV": self.lbda_TV,
+            "calculation option": self.calculation_option,
+            "index infocus image": self.idx_focused_image,
+            "index low OPL": self.axial_separation,
+            "index high OPL": self.OPL_idx_high,
+            "index background": self.idx_background,
+            "index sample": self.idx_sample,
+            "mass total image in ng": self.entire_mass,
+            "mass inside contour in ng": self.contour_inside_mass,
+            "mass on contour in ng": self.contourline_mean_mass,
+            "mass effective in ng": (self.contour_inside_mass-self.contourline_mean_mass),
+            "Area of contour in um^2": self.contour_area,
+            "contour index": self.contour_index,
+            "threshold": self.threshold,
+            "scalefactor": self.scalefactor,                    
+            "x1": self.x1,
+            "x2": self.x2,
+            "y1": self.y1,
+            "y2": self.y2
+        }
+
+    def write_csv(self, csv_writer):
         
-        self.file = file
-        self.filename =filename
-        self.magnification = magnification
-        self.pixel_size = pixel_size
-        self.axial_step = axial_step
-        self.idx_background = idx_background
-        self.idx_sample = idx_sample
-        self.background = background        
-        self.sample = sample
-        self.idx_focused_image = idx_focused_image
-        self.idx_focused_image_calc=idx_focused_image_calc  
-        self.x1=x1
-        self.y1=y1
-        self.x2=x2
-        self.y2=y2
-        self.OPL_mixed = OPL_mixed
-        self.opd_dry_mass = opd_dry_mass
-        self.stack = stack
-        self.OPL_idx_low=OPL_idx_low
-        self.OPL_idx_high=OPL_idx_high
-        self.drymass_ent=drymass_ent
-        self.drymass_contour=drymass_contour
-        self.drymass_outer_mean=drymass_outer_mean
-        self.edges=edges
-        self.hierarchy=hierarchy
-        self.contours=contours
-        self.raw_image=raw_image
-        self.contour_mask=contour_mask
-        self.contour_scaled=contour_scaled
-        self.contour_outer_mean=contour_outer_mean
-        self.alpha=alpha
-        self.selected_stack=selected_stack
-        self.drymass_ent_mean=drymass_ent_mean
-        self.lbda_TV=lbda_TV
-        self.iteration=iteration
-        self.contour_nr=contour_nr
-        self.treshhold=treshhold
-        self.scalefactor=scalefactor
-        self.calulation=calculation
-        self.area=area
-        self.draw_x=draw_x
-        self.draw_y=draw_y
-        self.contour_area=contour_area
-        self.uploaded_files=uploaded_files
+        for key, value in self.csv_dict.items():
+            csv_writer.writerow([key, value])
+
+global file
+file: Daten = Daten()
