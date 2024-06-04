@@ -30,7 +30,7 @@ class EvaluationWindow(QWidget):
         self.lbl_mean_cellmass=QLabel('Mean cell mass in ng: 0')
         self.parameter_layout.addWidget(self.lbl_mean_cellmass,0,1)
 
-        self.mc1=MplCanvas(self, None, False, False, width=50, height=40, dpi=100)
+        self.mc1=MplCanvas(self,width=50, height=40, dpi=100)
         self.page_layout.addWidget(self.mc1,1,0)
 
        
@@ -54,7 +54,7 @@ class EvaluationWindow(QWidget):
             normalised_mass=(self.cell/self.cell_area)
             
             self.page_layout.removeWidget(self.mc1)
-            self.mc1=MplCanvas(None, self, True, False, width=5, height=4, dpi=100)
+            self.mc1=MplCanvas(self, width=5, height=4, dpi=100)
             self.page_layout.addWidget(self.mc1,1,0)
             self.mc1.evaluation(normalised_mass,'Mass/Area')
 
