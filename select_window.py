@@ -66,9 +66,13 @@ class SelectWindow(QWidget):
         self.idx_focused_image=self.sld_select_image.value()
     
     def save_idx_focused_image(self):
-        file.idx_focused_image=self.idx_focused_image
+        if file.idx_focused_image!=self.idx_focused_image:
+            file.idx_focused_image=self.idx_focused_image
+            self.main_window.btn_save_file.setEnabled(False)
+            self.main_window.btn_statistics.setDisabled(False)
+            self.main_window.init_button_frame()
+            self.main_window.init_parameter_frame()
+            self.main_window.init_mc2(None)
+            self.main_window.init_mc3(None)
+            self.main_window.lbl_focused_image.setText("Index focused image: "+str(file.idx_focused_image))
         self.close()
-
-    def closeEvent(self, event):
-        self.main_window.show_raw_image()
-        self.main_window.lbl_focused_image.setText("Index focused image: "+str(file.idx_focused_image))

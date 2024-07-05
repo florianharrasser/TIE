@@ -2,6 +2,7 @@ import sys
 import csv
 from daten import file
 from setting_window import SettingWindow
+from statistics_window import StatisticWindow
 from select_window import SelectWindow
 from evaluation_window import EvaluationWindow
 import calculation as calc
@@ -16,7 +17,10 @@ from PyQt6.QtGui import QAction
 from  MplCanvas import MplCanvas
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIntValidator
-from state import State
+from state import State, FileFormat
+import numpy as np
+import multipagetiff as mtif
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
 
 class Main(QMainWindow):
@@ -80,8 +84,17 @@ class Main(QMainWindow):
         self.btn_show_evaluation_window.triggered.connect(self.show_evaluation_window)
         toolBar.addAction(self.btn_show_evaluation_window)
 
+        self.btn_statistics=QAction("Statistics")
+        self.btn_statistics.triggered.connect(self.statictis)
+        self.btn_statistics.setDisabled(True)
+        toolBar.addAction(self.btn_statistics)
+
         return toolBar
     
+    def statictis(self):
+        self.statistic_window= StatisticWindow()
+        self.statistic_window.show()
+
     #initializing frame for labels
     def init_label_frame(self):
         frame = QFrame()
@@ -327,70 +340,78 @@ class Main(QMainWindow):
 
         self.page_layout.addWidget(frame,0,1)
     
-    def init_mc1(self, title:str, image):
+    def init_mc1(self, plot_option):
+        frame=QFrame()
+        frame_layout=QGridLayout(frame)
+
         self.layout().removeWidget(self.mc1)
         self.mc1=MplCanvas(self, width=5, height=4, dpi=100)
-        self.page_layout.addWidget(self.mc1,1,1)   
-        self.mc1.show_image(title, image)
+        toolbar_zoom = NavigationToolbar(self.mc1, self)
+
+        frame_layout.addWidget(toolbar_zoom, 0,0)
+        frame_layout.addWidget(self.mc1,1,0)   
+        
+        self.page_layout.addWidget(frame,1,1)
+        if plot_option: plot_option()
     
     def init_mc2(self, plot_option):
+        frame=QFrame()
+        frame_layout=QGridLayout(frame)
+
         self.layout().removeWidget(self.mc2)
         self.mc2=MplCanvas(self, width=5, height=4, dpi=100)
-        self.page_layout.addWidget(self.mc2,2,0)        
-        plot_option()
+
+        toolbar_zoom = NavigationToolbar(self.mc2, self)
+        frame_layout.addWidget(toolbar_zoom, 0,0)
+        frame_layout.addWidget(self.mc2,1,0) 
+
+        self.page_layout.addWidget(frame,2,0)        
+        if plot_option: plot_option()
 
     def init_mc3(self, plot_option):
+        frame=QFrame()
+        frame_layout=QGridLayout(frame)
+
         self.layout().removeWidget(self.mc3)
         self.mc3=MplCanvas(self, width=5, height=4, dpi=100)
-        self.page_layout.addWidget(self.mc3,2,1)
-        plot_option()
+
+        toolbar_zoom = NavigationToolbar(self.mc3, self)
+        frame_layout.addWidget(toolbar_zoom, 0,0)
+        frame_layout.addWidget(self.mc3,1,0)   
+
+        self.page_layout.addWidget(frame,2,1)
+        if plot_option: plot_option()
 
     #dialog for uploading files
     def open_dialog(self):
-        try:
-            #resets the file, and the mainWindow
-            file.reset()
-            toolbar=self.init_toolbar()
-            self.addToolBar(toolbar)
+        try:   
+            path, _ = QFileDialog.getOpenFileName(self, "Open File", "", "LIF Files (*.lif);;TIF Files (*.tif)")
 
-            self.layout().removeWidget(self.mc1)
-            self.mc1=MplCanvas(self, width=5, height=4, dpi=100)
-            self.page_layout.addWidget(self.mc1,1,1)   
+            if path:
+                file.reset()
+                if path.endswith('.lif'):
+                    self.initialize_lif_file(path)
+                if path.endswith('.tif'):
+                    self.initialize_tif_file(path)
+            else: 
+                return                
 
-            self.layout().removeWidget(self.mc2)
-            self.mc2=MplCanvas(self, width=5, height=4, dpi=100)
-            self.page_layout.addWidget(self.mc2,2,0)        
-
-            self.layout().removeWidget(self.mc3)
-            self.mc3=MplCanvas(self, width=5, height=4, dpi=100)
-            self.page_layout.addWidget(self.mc3,2,1)
-
+            #reseting the mainwindow
+            self.init_mc1(None)
+            self.init_mc2(None)
+            self.init_mc3(None)
             self.init_label_frame()
             self.init_calculation_frame()
             self.init_parameter_frame()
             self.init_button_frame()
             self.init_imagebutton_frame()
 
-            path, _ = QFileDialog.getOpenFileName(self, "Open File", "", "LIF Files (*.lif)")
-            
-            if path: file.file=LifFile(path)            
-            if file.file==None: raise Exception('Invalid input: No file selected. Please select a file.')
-            
-            #Settings for 'Setting_Window' and display it
             self.setting_window = SettingWindow(self)
-            lifProperties = []    
-            file.uploaded_files=[]        
-
-            for idx, entry in enumerate(file.file.image_list):
-                lifProperties.append(f"Index: {idx:<5}Name:{entry['name']:<60}Dimensions: {str(entry['dims']):<40}")
-                file.uploaded_files.append(entry['name'])
-                self.setting_window.lbl_status.setText("\n".join(lifProperties))
-
             self.setting_window.show()
-        except Exception as e:
-            self.error_me
-    
 
+        except Exception as e:
+            self.error_message(e)            
+    
     #dialog for saving file
     def save_file(self):
         try:
@@ -402,27 +423,68 @@ class Main(QMainWindow):
                 self.mc2.save_figure(path[:-4]+'(drymass)')
                 self.mc3.save_figure(path[:-4]+'(selectedpart)')
                         
-                with open(path, 'w') as files:
+                csv_path = f"{path[:-4]}.csv"
+                with open(csv_path, 'w') as files:
                     csv_writer = csv.writer(files)
                     file.write_csv(csv_writer)
+                
+                npy_path = f"{path[:-4]}.npy"
+                np.save(npy_path, file.selected_contour)
 
             else: raise Exception('Error: Wrong path. Please provide a valid path.')
         except Exception as e:
             self.error_message(e)
 
-    #opens window for entering the microscope&calculation setting
-    def show_setting_window(self):
-        self.setting_window = SettingWindow(self)            
-        lifProperties = []
+    #loading the .tif-file with corresponding data
+    def initialize_tif_file(self, path):
+        file.file_format=FileFormat.TIF
+
+        file.file=[[],[]]
+        file.name=[[],[]]
+
+        if path:
+            sample_stack=mtif.read_stack(path)
+            file.sample=np.asarray([slice for slice in sample_stack])
+            file.file[0]=file.sample
+            file.name[0]= self.extract_filename(path)
+
+        file.name[1]="Please Upload a Background Image!"
+
+    #loading the .lif-file with corresponding data
+    def initialize_lif_file(self, path):
+        file.file_format=FileFormat.LIF
+
+        file.file=LifFile(path)
 
         if file.file==None: 
-            self.setting_window.lbl_status.setText("No file uploaded")
-        else:
-            for idx, entry in enumerate(file.file.image_list):
-                lifProperties.append(f"Index: {idx:<5}Name:{entry['name']:<60}Dimensions: {str(entry['dims']):<40}")
-
-            self.setting_window.lbl_status.setText("\n".join(lifProperties))
+            raise Exception('Invalid input: No file selected. Please select a file.')
         
+        file.lifProperties = []    
+        file.uploaded_files=[]
+        file.name=""
+
+        for idx, entry in enumerate(file.file.image_list):
+            file.lifProperties.append(f"Index: {idx:<5}Name:{entry['name']:<60}Dimensions: {str(entry['dims']):<40}")
+            file.uploaded_files.append(entry['name'])
+        
+        file.name=self.extract_filename(path)
+
+    #extracting the filename from path
+    def extract_filename(self, path):
+        name=''
+        for i in range (len(path)-5, -1, -1):
+            if(path[i] == '/'): 
+                break
+            name=name+path[i]
+
+        return name[::-1] #reversing the filename
+
+    #opens window for entering the microscope&calculation setting
+    def show_setting_window(self):
+        if file.file==None: 
+            file.lifProperties=['No File Uploaded']
+
+        self.setting_window = SettingWindow(self) 
         self.setting_window.show()
 
     #opens a window to select de focused image
@@ -438,17 +500,17 @@ class Main(QMainWindow):
 
     #shows backgroundimage in mc1
     def show_background(self):
-        self.init_mc1('Background Idx 1', file.background[1])
+        self.init_mc1(lambda: self.mc1.show_image('Background Idx 1', file.background[1]))
         self.mc1.with_selector()
 
     #shows sample image in mc1    
     def show_raw_image(self):#passt
-        self.init_mc1('Sample Idx 1',  file.sample[1])
+        self.init_mc1(lambda: self.mc1.show_image('Sample Idx 1', file.sample[1]))
         self.mc1.with_selector()
 
     #shows stack image in mc1
     def show_stack(self):#passt
-        self.init_mc1('Stack Idx 1', file.stack[1])
+        self.init_mc1(lambda: self.mc1.show_image('Stack Idx 1', file.stack[1]))
         self.mc1.with_selector()
 
     #calculates the mass and opl and displays plots for opl and selected part
@@ -462,6 +524,7 @@ class Main(QMainWindow):
             self.toggle_contour_index(True)
             self.toggle_contour_threshold(True)
             self.btn_save_file.setEnabled(True)
+            self.btn_statistics.setDisabled(True)
             self.btn_draw_contour_yourself.setText("Draw Contour Manually")
             self.btn_draw_contour_yourself.setAccessibleName("draw_status")
             self.btn_recall_contour.setText("Recall Contour")
@@ -489,7 +552,6 @@ class Main(QMainWindow):
     def show_plot_opl_tv(self):
         self._show_OPL_plot_default(lambda: calc.calculate_opl_tv())                
     
-
     #calculates the contours and displays them in mc3 plot
     def contour_detection(self):#passt
         # reset & update of GUI-elements and fileproperties
@@ -503,29 +565,30 @@ class Main(QMainWindow):
         self.sld_find_contour_index.setMaximum(len(file.hierarchy)-1)
         self.draw_contour()
 
-
     #draw contours in image with opl and in the image for the selected part
     def draw_contour(self):
-        file.contour_index=self.sld_find_contour_index.value()
+        file.selected_contour_index=self.sld_find_contour_index.value()
         file.state=State.DEFAULT
+
         self.reset_labels()
 
         self.validate_scale_functionality()
 
         self.init_mc2(lambda: self.mc2.draw_contour_with_colorbar( 'To get the Mass hit \'Calculate Contour Mass\'', True))
-        self.init_mc3(lambda: self.mc3.draw_contour('Selected Part', True))
 
+        self.init_mc3(lambda: self.mc3.draw_contour('Selected Part', True))
 
     #it is only possible to scale if a contour is selected, if all contours are shown, the scale functionality is disabled   
     def validate_scale_functionality(self):
-        if file.contour_index!=-1:
-            self.lbl_find_contour_index.setText("Contour Index: "+str(file.contour_index))
+        if file.selected_contour_index!=-1:
+            self.lbl_find_contour_index.setText("Contour Index: "+str(file.selected_contour_index))
             self.toggle_inflate_contour(True)
         else:
             self.lbl_find_contour_index.setText('All Contours')
             self.toggle_inflate_contour(False)
 
     def draw_contour_manually(self):
+        self.btn_statistics.setDisabled(True)
         self.reset_labels()
         self.btn_recall_contour.setText("Recall Contour")
         self.btn_recall_contour.setAccessibleName("_stored")
@@ -567,6 +630,7 @@ class Main(QMainWindow):
             else:
                 self.btn_draw_contour_yourself.setText("Draw Contour Manually")
                 self.btn_draw_contour_yourself.setAccessibleName("draw_status")
+            self.btn_statistics.setEnabled(True)
             calc.select_contour()
             calc.contour_mass()
             calc.contourline_mean_mass()
@@ -580,10 +644,10 @@ class Main(QMainWindow):
             
     def show_scaled_contours(self):
         file.state=State.SCALED
-        file.scalefactor=self.sld_inflate_contour.value()/100
+        file.inflatefactor=self.sld_inflate_contour.value()/100
         self.reset_labels()
         self.lbl_inflate.setText("Inflate Contour: "+str(self.sld_inflate_contour.value()/100))
-        self.txt_inflate_contour.setText(str(file.scalefactor))
+        self.txt_inflate_contour.setText(str(file.inflatefactor))
 
         calc.scale_contour()
         
@@ -604,14 +668,15 @@ class Main(QMainWindow):
             self.toggle_contour_threshold(False)
             self.toggle_inflate_contour(False)
             file.state=State.STORED
-            self.init_mc2(lambda: self.mc2.draw_stored_contour_with_colorbar('To get the Mass hit \'Calculate Contour Mass\'', contour_bool=True) )
+            calc.select_contour()
+            self.init_mc2(lambda: self.mc2.draw_selected_contour_with_colorbar('To get the Mass hit \'Calculate Contour Mass\'', contour_bool=True) )
             self.init_mc3(lambda: self.mc3.draw_stored_contour('Selected Part', True))
             self.btn_recall_contour.setText("Hide Stored Contour")
             self.btn_recall_contour.setAccessibleName("_hide")
             self.btn_recall_contour.setStyleSheet("background-color: lightblue; color: black; border: 1px solid black;")
             file.selected_contour=file.stored_contour
         else:
-            if(file.scalefactor==1):
+            if(file.inflatefactor==1):
                self.draw_contour()
             else:
                 self.show_scaled_contours()
@@ -696,7 +761,7 @@ class Main(QMainWindow):
             self.sld_inflate_contour.setValue(int(100*float(self.txt_inflate_contour.text())))
         except ValueError:
             self.error_message(Exception("WROG INPUT!"))
-   
+
     def find_contour_threshold(self):
         self.sld_find_contour_threshold.setValue(int(self.txt_find_contour_threshold.text()))
 

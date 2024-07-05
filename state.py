@@ -5,3 +5,7 @@ class State(Enum):
     SCALED=2
     DRAWN=3
     STORED=4
+
+class FileFormat(Enum):
+    LIF=1
+    TIF=2

@@ -12,16 +12,15 @@ from daten import file
 import calculation as calc
 
 
-
 class MplCanvas(FigureCanvasQTAgg):
 
     def __init__(self, mainWindow, width=5, height=4, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
+
         self.axes = fig.add_subplot(111)
         self.file=file
         self.main_window:mainWindow=mainWindow
         super(MplCanvas, self).__init__(fig)
-
 
     def with_selector(self):
         self.RS = RectangleSelector(self.axes, self.line_select_callback,
@@ -40,14 +39,12 @@ class MplCanvas(FigureCanvasQTAgg):
         self.CS.connect_event('button_press_event', self.on_press)
         self.CS.connect_event('button_release_event', self.on_release)
         self.CS.connect_event('motion_notify_event', self.on_motion) 
-
-    
+ 
     def on_release(self, event):
         if event.button==1:
             self.drawing=False
             calc.select_contour()
-            self.draw_selected_contour_with_colorbar('To get the Mass hit \'Calculate Contour Mass\'', True, enable_colorbar=False)
-            
+            self.draw_selected_contour_with_colorbar('To get the Mass hit \'Calculate Contour Mass\'', True, enable_colorbar=False)        
                  
     def on_press(self, event):
         if event.button == 1:
@@ -57,7 +54,6 @@ class MplCanvas(FigureCanvasQTAgg):
             self.draw_selected_contour_with_colorbar('Draw a contour', False, enable_colorbar=False)
             self.file.draw_x.append(event.xdata)
             self.file.draw_y.append(event.ydata)
-
     
     def on_motion(self, event):        
         if self.drawing and event.xdata is not None and event.ydata is not None:
@@ -65,6 +61,31 @@ class MplCanvas(FigureCanvasQTAgg):
             self.file.draw_y.append(event.ydata)
             self.axes.scatter(self.file.draw_x, self.file.draw_y, color='red', s=3, marker='o')  
             self.draw()
+
+    def line_select_callback(self, eclick, erelease):
+        x1, y1 = int(eclick.xdata), int(eclick.ydata)
+        x2, y2 = int(erelease.xdata), int(erelease.ydata)
+
+        # sets the values for x and y, which is important for the statistic feature
+        if x1>x2:
+            x1,x2=x2,x1
+
+        if y1>y2:
+            y1,y2=y2,y1
+
+        # Assign sorted values to file attributes
+        self.file.x1, self.file.y1 = x1, y1
+        self.file.x2, self.file.y2 = x2, y2
+
+        self.main_window.btn_calculate_FFT.setEnabled(True)
+        self.main_window.btn_calculate_TV.setEnabled(True)
+        self.main_window.txt_axial_separation.setEnabled(True)
+    
+    def toggle_selector(self, event):
+        if event.key in ['Q', 'q'] and self.RS.active:
+            self.RS.set_active(False)
+        if event.key in ['A', 'a'] and not self.RS.active:
+            self.RS.set_active(True)
 
     def show_image(self, title, image):
         self.axes.clear()       
@@ -76,44 +97,9 @@ class MplCanvas(FigureCanvasQTAgg):
         scalebar = ScaleBar(scalebar_lenght, "um", location='lower right', frameon=False, color='white')
         self.axes.add_artist(scalebar)
         self.draw()
-    
-    # def show_drymass(self, title, file):
-    #     self.axes.clear()
-    #     self.figure = self.axes.figure
-    #     image = self.axes.imshow(file.OPL, cmap="hsv")
-    #     self.axes.set_title(title)
-    #     self.axes.figure.colorbar(image, ax=self.axes)
-    #     self.draw()
 
-    def save_figure(self, path):
-        self.figure.savefig(path+".png")
-
-    def line_select_callback(self, eclick, erelease):
-        self.file.x1, self.file.y1= int(eclick.xdata), int(eclick.ydata)        
-        self.file.x2, self.file.y2= int(erelease.xdata), int(erelease.ydata)
-        self.main_window.btn_calculate_FFT.setEnabled(True)
-        self.main_window.btn_calculate_TV.setEnabled(True)
-        self.main_window.txt_axial_separation.setEnabled(True)
-
-    def toggle_selector(self, event):
-        if event.key in ['Q', 'q'] and self.RS.active:
-            self.RS.set_active(False)
-        if event.key in ['A', 'a'] and not self.RS.active:
-            self.RS.set_active(True)
-
-    def draw_inflated_contour_with_colorbar(self, title, contour_bool):
-        self.draw_default_contour_with_colorbar(file.contour_scaled,0,title, contour_bool)
-
-    def draw_contour_with_colorbar(self, title, contour_bool):
-        self.draw_default_contour_with_colorbar(file.contours,file.contour_index,title, contour_bool)
-
-    def draw_selected_contour_with_colorbar(self, title, contour_bool, enable_colorbar=True):
-        self.draw_default_contour_with_colorbar(file.selected_contour,0,title, contour_bool, enable_colorbar)
-    
-    def draw_stored_contour_with_colorbar(self, title, contour_bool, enable_colorbar=True):
-        self.draw_default_contour_with_colorbar(file.stored_contour,0,title, contour_bool, enable_colorbar)
-
-    def draw_default_contour_with_colorbar(self,contour, contour_index, title, contour_bool, colorbar_bool=True):
+    #Draw contours in heatmap
+    def draw_default_contour_heatmap(self,contour, contour_index, title, contour_bool, colorbar_bool=True):
         self.axes.clear()
         image_with_contours = file.opd_dry_mass.copy()
         if contour_bool:
@@ -139,21 +125,20 @@ class MplCanvas(FigureCanvasQTAgg):
         scalebar = ScaleBar(scalebar_lenght, "um", location='lower right', frameon=False, color='white')
         self.axes.add_artist(scalebar)
         self.draw()
-    
-    def draw_inflated_contour(self, title, contour_bool):
-        self.draw_default_contour(file.contour_scaled,0,title,contour_bool)
-        
-    def draw_stored_contour(self, title, contour_bool):
-        self.draw_default_contour(file.stored_contour,0,title,contour_bool)
-        
-    def draw_contour(self, title, contour_bool):
-        self.draw_default_contour(file.contours,file.contour_index,title,contour_bool)
 
-    def draw_default_contour(self, contour,contour_idx,title, contour_bool):
+    def draw_contour_with_colorbar(self, title, contour_bool):
+        self.draw_default_contour_heatmap(file.contours,file.selected_contour_index,title, contour_bool)
+
+    def draw_selected_contour_with_colorbar(self, title, contour_bool, enable_colorbar=True):
+        self.draw_default_contour_heatmap(file.selected_contour,0,title, contour_bool, enable_colorbar)
+
+    #Draw contours in raw image    
+    def draw_default_contour_raw_image(self, contour,contour_idx,title, contour_bool):
         self.axes.clear()
         image_with_contours = file.raw_image.copy()
         if contour_bool:
             cv2.drawContours(image_with_contours, contours=contour, contourIdx=contour_idx, color=200, thickness=2, lineType=cv2.LINE_AA)
+
         self.axes.imshow(image_with_contours)
         self.axes.set_title(title)
 
@@ -165,10 +150,26 @@ class MplCanvas(FigureCanvasQTAgg):
         self.axes.set_yticklabels(yticks)
         self.axes.set_xlabel(r'Pixel')
         self.axes.set_ylabel(r'Pixel')
+        
         scalebar_lenght=1*self.file.pixel_size*1e6
         scalebar = ScaleBar(scalebar_lenght, "um", location='lower right', frameon=False, color='white')
         self.axes.add_artist(scalebar)
         self.draw()
+
+    def draw_inflated_contour_with_colorbar(self, title, contour_bool):
+        self.draw_default_contour_heatmap(file.contour_inflated,0,title, contour_bool)
+
+    def draw_inflated_contour(self, title, contour_bool):
+        self.draw_default_contour_raw_image(file.contour_inflated,0,title,contour_bool)
+        
+    def draw_stored_contour(self, title, contour_bool):
+        self.draw_default_contour_raw_image(file.stored_contour,0,title,contour_bool)
+        
+    def draw_contour(self, title, contour_bool):
+        self.draw_default_contour_raw_image(file.contours,file.selected_contour_index,title,contour_bool)
+
+    def save_figure(self, path):
+            self.figure.savefig(path+".png")
 
     def evaluation(self, data, title):
         self.axes.clear()

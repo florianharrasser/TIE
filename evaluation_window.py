@@ -3,9 +3,7 @@ matplotlib.use('QtAgg')
 from PyQt6.QtWidgets import (
     QPushButton, QWidget, QGridLayout, QFileDialog, QMessageBox, QLabel
     )
-from PyQt6.QtGui import QAction
 from  MplCanvas import MplCanvas
-from PyQt6.QtCore import Qt
 import numpy as np
 import csv
 import os
@@ -15,8 +13,6 @@ class EvaluationWindow(QWidget):
     def __init__(self):
         super().__init__()        
         self.setWindowTitle("Evaluation")
-
-        
 
         self.page_layout = QGridLayout()
         self.setLayout(self.page_layout)
@@ -37,7 +33,7 @@ class EvaluationWindow(QWidget):
     def open_dialog(self):
         try:
             path, _ = QFileDialog.getOpenFileNames(self, "Open File", "",  "CSV Files (*.csv)")
-            cell=[]
+            cell_mass=[]
             cell_area=[]
             
             if path: 
@@ -46,22 +42,19 @@ class EvaluationWindow(QWidget):
             for i in range(len(path)):
                 if os.path.exists(path[i]):
                     csv_data = self.import_csv(path[i])
-                    cell.append(float(csv_data[28][1]))
-                    cell_area.append(float(csv_data[30][1]))
+                    cell_mass.append(float(csv_data[48][1]))
+                    cell_area.append(float(csv_data[64][1]))
             
-            self.cell=np.array(cell)
+            self.cell_mass=np.array(cell_mass)
             self.cell_area=np.array(cell_area)
-            normalised_mass=(self.cell/self.cell_area)
+            self.normalised_mass=(self.cell_mass/self.cell_area)
             
             self.page_layout.removeWidget(self.mc1)
             self.mc1=MplCanvas(self, width=5, height=4, dpi=100)
             self.page_layout.addWidget(self.mc1,1,0)
-            self.mc1.evaluation(normalised_mass,'Mass/Area')
+            self.mc1.evaluation(self.normalised_mass,'Mass/Area')
 
-            self.lbl_mean_cellmass.setText('Mean cell mass in ng: '+str(np.mean(self.cell)))
-
-          
-
+            self.lbl_mean_cellmass.setText('Mean areal mass density in ng/um: '+str(np.mean(self.normalised_mass)))
 
         except Exception as e:
             self.error_message(e)
