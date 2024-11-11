@@ -147,11 +147,34 @@ class Main(QMainWindow):
         self.txt_axial_separation.setText("1")  # Example default value
         frame_layout.addWidget(self.txt_axial_separation, 0, 1, alignment=Qt.AlignmentFlag.AlignLeft)
 
+        self.lbl_axial_separation_high = QLabel("Axial separation_high:")
+        frame_layout.addWidget(self.lbl_axial_separation_high, 1, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+
+        self.txt_axial_separation_high = QLineEdit()
+        self.txt_axial_separation_high.setValidator(QIntValidator())
+        self.txt_axial_separation_high.setToolTip("This field specifies the axial distance (index) for the calculation with the FFT.")
+        # self.txt_axial_separation_high.setDisabled(True)
+        self.txt_axial_separation_high.setFixedSize(50, 30)
+        self.txt_axial_separation_high.setText("1")  # Example default value
+        frame_layout.addWidget(self.txt_axial_separation_high, 1, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+
+        self.btn_calculate_US = QPushButton("Calculate Optical Path Length (US)")
+        self.btn_calculate_US.setToolTip("Use calculation option with the universal solution")
+        self.btn_calculate_US.setDisabled(True)
+        self.btn_calculate_US.clicked.connect(self.show_plot_opl_US)
+        frame_layout.addWidget(self.btn_calculate_US, 1, 3, alignment=Qt.AlignmentFlag.AlignHCenter)
+
         self.btn_calculate_FFT = QPushButton("Calculate Optical Path Length (FFT)")
         self.btn_calculate_FFT.setToolTip("Use calculation option with FFT")
         self.btn_calculate_FFT.setDisabled(True)
         self.btn_calculate_FFT.clicked.connect(self.show_plot_opl_fft)
         frame_layout.addWidget(self.btn_calculate_FFT, 0, 2, alignment=Qt.AlignmentFlag.AlignHCenter)
+
+        self.btn_calculate_FFT_mixing = QPushButton("Calculate FFT mixing")
+        self.btn_calculate_FFT_mixing.setToolTip("mixing")
+        self.btn_calculate_FFT_mixing.setDisabled(True)
+        self.btn_calculate_FFT_mixing.clicked.connect(self.show_plot_opl_fft_mixing)
+        frame_layout.addWidget(self.btn_calculate_FFT_mixing, 1, 2, alignment=Qt.AlignmentFlag.AlignHCenter)
 
         self.btn_calculate_TV = QPushButton("Calculate Optical Path Length (TV Regularization)")
         self.btn_calculate_TV.setToolTip("Use calculation option with regularization")
@@ -174,7 +197,7 @@ class Main(QMainWindow):
         self.sld_find_contour_threshold.setMinimum(1)
         self.sld_find_contour_threshold.setMaximum(250)
         self.sld_find_contour_threshold.setDisabled(True)
-        self.sld_find_contour_threshold.valueChanged.connect(self.contour_detection)        
+        self.sld_find_contour_threshold.sliderReleased.connect(self.contour_detection)        
         self.sld_find_contour_threshold.setToolTip("Refine the threshold to precisely identify contours in your image")
         frame_layout.addWidget(self.sld_find_contour_threshold,1,1,1,1, alignment=Qt.AlignmentFlag.AlignHCenter)
 
@@ -244,7 +267,7 @@ class Main(QMainWindow):
         self.sld_inflate_contour.setValue(100)
         self.sld_inflate_contour.setFixedSize(500,30)
         self.sld_inflate_contour.setToolTip("Use this slider to adjust the scale of the contour")
-        self.sld_inflate_contour.valueChanged.connect(self.show_scaled_contours)
+        self.sld_inflate_contour.sliderReleased.connect(self.show_scaled_contours)
         frame_layout.addWidget(self.sld_inflate_contour,5,1,1,1, alignment=Qt.AlignmentFlag.AlignHCenter)
 
         self.lbl_inflate=QLabel("Inflate Contour: 1")
@@ -534,6 +557,7 @@ class Main(QMainWindow):
             self.enable_all_buttons()
             
             file.axial_separation=int(self.txt_axial_separation.text())
+            file.axial_separation_high=int(self.txt_axial_separation_high.text())
 
             # calculation of opl and dry mass
             calculation_option()
@@ -547,7 +571,13 @@ class Main(QMainWindow):
            self.error_message(e)
 
     def show_plot_opl_fft(self):
-        self._show_OPL_plot_default(lambda: calc.calculate_opl_fft())        
+        self._show_OPL_plot_default(lambda: calc.calculate_opl_fft(statistics=False, low=True, high=False)) 
+
+    def show_plot_opl_fft_mixing(self):
+        self._show_OPL_plot_default(lambda: calc.mixing())   
+
+    def show_plot_opl_US(self):
+        self._show_OPL_plot_default(lambda: calc.calculate_opl_US_method())     
     
     def show_plot_opl_tv(self):
         self._show_OPL_plot_default(lambda: calc.calculate_opl_tv())                
@@ -559,6 +589,7 @@ class Main(QMainWindow):
         self.lbl_find_contour_threshold.setText("Treshold: "+str(file.threshold)) 
         self.txt_find_contour_threshold.setText(str(file.threshold))       
         self.sld_inflate_contour.setValue(100)
+        self.lbl_inflate.setText("Inflate Contour: " + str(self.sld_inflate_contour.value()/100))
 
         # searching for contours
         calc.contour_detection()
@@ -693,9 +724,11 @@ class Main(QMainWindow):
     #button functions for increase/decrease the sliders
     def find_contour_threshold_up(self):
         self.sld_find_contour_threshold.setValue(self.sld_find_contour_threshold.value()+1)
+        self.contour_detection()
     
     def find_contour_threshold_down(self):
         self.sld_find_contour_threshold.setValue(self.sld_find_contour_threshold.value()-1)
+        self.contour_detection()
 
     def find_contour_index_up(self):
         self.sld_find_contour_index.setValue(self.sld_find_contour_index.value()+1)
@@ -705,9 +738,11 @@ class Main(QMainWindow):
     
     def scale_down(self):
         self.sld_inflate_contour.setValue(self.sld_inflate_contour.value()-1)
+        self.show_scaled_contours()
 
     def scale_up(self):
         self.sld_inflate_contour.setValue(self.sld_inflate_contour.value()+1)
+        self.show_scaled_contours()
     
     #enables all buttons except inflate buttons and recall button
     def enable_all_buttons(self):
@@ -734,6 +769,8 @@ class Main(QMainWindow):
         self.sld_find_contour_threshold.setValue(1)
         self.sld_find_contour_index.setValue(-1)
         self.sld_inflate_contour.setValue(100)
+        self.lbl_inflate.setText("Inflate Contour: 1")
+        self.txt_inflate_contour.setText("1")
 
     def toggle_contour_index(self, enable):
         self.btn_find_contour_index_up.setEnabled(enable)

@@ -6,6 +6,25 @@ from daten import file
 from state import State, FileFormat
 from PIL import Image
 
+def mixing(statistic=False):
+    sigma=1
+    OPL_lo=calculate_opl_fft(low=True, high=False, statistics=statistic)
+    OPL_hi=calculate_opl_fft(low=False, high=True, statistics=statistic)
+    gaussian2D = lambda x, y, sigma: np.exp(-((x)**2/(2*sigma**2) + (y)**2/(2*sigma**2)))
+    Nx,Ny = OPL_lo.shape
+    x = np.arange(Nx) - np.floor(Nx/2)
+    y = np.arange(Ny) - np.floor(Ny/2)
+    Y,X = np.meshgrid(y,x)
+    LP_filt = np.fft.ifftshift(gaussian2D(X,Y,sigma))
+       
+    F_hi = np.fft.fft2(OPL_hi)
+    F_lo = np.fft.fft2(OPL_lo)
+    F_mix = LP_filt * F_lo + (1-LP_filt) * F_hi
+    
+    file.opd = np.real(np.fft.ifft2(F_mix))
+    file.calculation_option="mixing"
+
+
 def find_focused_image(file):    
     gaussian = lambda x, x0, sigma: np.exp(-(x-x0)**2/(2*sigma**2))
     width = []
@@ -58,7 +77,26 @@ def calculate_opl_tv(statistics=False):
     file.opd=np.array(OPL, dtype=np.float32)
     file.calculation_option="TvNorm"
 
-def calculate_opl_fft(statistics=False): 
+def calculate_opl_US_method(statistics=False):
+    def calc_phase(dI, Kx, Ky, I_max):
+
+        k0=2*np.pi/(550*1e-9)
+        kernel = np.zeros_like(Kx)
+        mask = (Kx**2 + Ky**2) >= 1e-10
+        kernel[mask] = -1 / (Kx[mask]**2 + Ky[mask]**2)
+
+        F_psi = -np.fft.fft2(dI)*kernel*k0
+        return np.fft.ifft2(F_psi).real/I_max
+    
+    def calc_dI(psi, Kx, Ky, I0):
+    
+        k0=2*np.pi/(550*1e-9)
+        gx= np.fft.ifft2(1j*Kx*np.fft.fft2(psi)).real*I0
+        gy= np.fft.ifft2(1j*Ky*np.fft.fft2(psi)).real*I0
+        J=(np.fft.ifft2(1j*Kx*np.fft.fft2(gx))+np.fft.ifft2(1j*Ky*np.fft.fft2(gy))).real/k0
+
+        return -J
+
     if(statistics): pass
     else:   
         file.selected_stack = file.stack[:,file.y1:file.y2,file.x1:file.x2].copy()
@@ -67,6 +105,49 @@ def calculate_opl_fft(statistics=False):
 
     n1 = file.idx_focused_image - file.axial_separation
     n2 = file.idx_focused_image + file.axial_separation 
+
+    dz = np.abs(n2-n1) * file.axial_step
+
+    I_max=np.max(file.selected_stack[file.idx_focused_image])
+    I0=np.fft.ifftshift(file.selected_stack[n1])
+    I1=np.fft.ifftshift(file.selected_stack[n2])
+    dI=(I0-I1)/dz
+
+    Nx,Ny = I0.shape
+    kx = 2*np.pi*np.fft.fftfreq(Nx, file.pixel_size)
+    ky = 2*np.pi*np.fft.fftfreq(Ny, file.pixel_size)
+    Kx, Ky = np.meshgrid(ky,kx)
+
+    dI0=dI.copy()
+    psi0=0
+
+    for i in range(50):
+        psi1=calc_phase(dI0, Kx, Ky, I_max)
+        dI1=calc_dI(psi1,Kx,Ky,I0)
+        dI0=dI0-dI1
+        psi0=psi0+psi1
+
+    OPL=np.real(psi0)
+    OPL= np.fft.ifftshift(OPL)
+
+    file.opd=OPL*100
+    file.calculation_option="US_method"
+
+
+def calculate_opl_fft(low=True, high =False, statistics=False): 
+    if(statistics): pass
+    else:   
+        file.selected_stack = file.stack[:,file.y1:file.y2,file.x1:file.x2].copy()
+        file.raw_image=file.sample[1][file.y1:file.y2,file.x1:file.x2].copy()
+        find_focused_image_FOV(file)
+
+    if low:
+        n1 = file.idx_focused_image - file.axial_separation
+        n2 = file.idx_focused_image + file.axial_separation 
+
+    if high:
+        n1 = file.idx_focused_image-file.axial_separation_high
+        n2=file.idx_focused_image+file.axial_separation_high
 
     dz = np.abs(n2-n1) * file.axial_step    
     rows = slice(0,file.selected_stack.shape[1])
@@ -83,20 +164,26 @@ def calculate_opl_fft(statistics=False):
     ky = 2*np.pi*np.fft.fftfreq(Ny, file.pixel_size)
     Kx, Ky = np.meshgrid(ky,kx)
 
-    eps = 1e-4 #to avoid division by zero
-    F_Psi = np.fft.fft2(dI)/(-(Kx**2 + Ky**2) - eps)
+    # eps = 1e-4 #to avoid division by zero
+
+    kernel = np.zeros_like(Kx)
+    mask = (Kx**2 + Ky**2) >= 1e-10
+    kernel[mask] = -1 / (Kx[mask]**2 + Ky[mask]**2)
+    
+    F_Psi = np.fft.fft2(dI)*kernel #/(-(Kx**2 + Ky**2) - eps)
     Psi = np.real(np.fft.ifft2(F_Psi))
     gx, gy = np.gradient(Psi)
     tmp = divergence((gx/I0), (gy/I0))/file.pixel_size**2  #divide by ux**2 to account for the units!
     
     #solving the laplace equation via fft:
-    F_OPL = np.fft.fft2(tmp)/(-(Kx**2 + Ky**2) - eps)
+    F_OPL = np.fft.fft2(tmp)*kernel #/(-(Kx**2 + Ky**2) - eps)
     OPL = np.real(np.fft.ifft2(F_OPL))
     OPL -= np.min(OPL)
     OPL= np.fft.ifftshift(OPL)*1e9
 
     file.opd=OPL
     file.calculation_option="FFT"
+    return OPL
 
 def divergence(gx,gy):
     return (np.gradient(gx)[0] + np.gradient(gy)[1])

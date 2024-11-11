@@ -23,6 +23,8 @@ class StatisticWindow(QWidget):
         self.fft=None
         self.tv=None
         self.shift=None
+        self.us=None
+        self.mixed=None
         self.shift_contour=np.array(file.selected_contour[0])
 
         self.page_layout = QGridLayout()
@@ -36,17 +38,25 @@ class StatisticWindow(QWidget):
         self.parameter_fft_layout=QGridLayout()
         self.page_layout.addLayout(self.parameter_fft_layout,1,0)
 
+        self.parameter_us_layout=QGridLayout()
+        self.page_layout.addLayout(self.parameter_us_layout,2,0)
+
+        self.parameter_mixed_layout=QGridLayout()
+        self.page_layout.addLayout(self.parameter_mixed_layout,3,0)
+
         self.parameter_shift_layout=QGridLayout()
-        self.page_layout.addLayout(self.parameter_shift_layout,2,0)
+        self.page_layout.addLayout(self.parameter_shift_layout,4,0)
 
         self.button_layout=QGridLayout()
-        self.page_layout.addLayout(self.button_layout,3,0)
+        self.page_layout.addLayout(self.button_layout,5,0)
 
         #initialize frames
         self.init_parameter_tv_frame()
         self.init_parameter_fft_frame()
         self.init_parameter_shift_frame()
         self.init_button_layout_frame()
+        self.init_parameter_US_frame()
+        self.init_parameter_mixed_frame()
 
     def init_parameter_tv_frame(self):
         frame=QFrame()
@@ -88,6 +98,42 @@ class StatisticWindow(QWidget):
         frame_layout.addWidget(self.fft_axial_step_input,1,1)        
 
         self.parameter_fft_layout.addWidget(frame,1,0)
+
+    def init_parameter_US_frame(self):
+        frame=QFrame()
+        frame_layout=QGridLayout(frame)
+        
+        self.us_title=QLabel("Parameter for US_method:")
+        self.do_us_calculation=QCheckBox()
+        frame_layout.addWidget(self.us_title,0,0)
+        frame_layout.addWidget(self.do_us_calculation,0,1)
+
+        self.us_axial_step=QLabel("Axial step values:")
+        self.us_axial_step_input=QLineEdit()        
+        frame_layout.addWidget(self.us_axial_step,1,0)
+        frame_layout.addWidget(self.us_axial_step_input,1,1)        
+
+        self.parameter_us_layout.addWidget(frame,1,0)
+
+    def init_parameter_mixed_frame(self):
+        frame=QFrame()
+        frame_layout=QGridLayout(frame)
+        
+        self.mixed_title=QLabel("Parameter for mixed_method (low/high):")
+        self.do_mixed_calculation=QCheckBox()
+        frame_layout.addWidget(self.mixed_title,0,0)
+        frame_layout.addWidget(self.do_mixed_calculation,0,1)
+
+        self.mixed_axial_step_low_title=QLabel("Idx low:")
+        self.mixed_axial_step_high_title=QLabel("Idx high:")
+        self.mixed_axial_step_low=QLineEdit()
+        self.mixed_axial_step_high=QLineEdit()
+        frame_layout.addWidget(self.mixed_axial_step_low_title,1,0)
+        frame_layout.addWidget(self.mixed_axial_step_high_title,2,0)
+        frame_layout.addWidget(self.mixed_axial_step_low,1,1)
+        frame_layout.addWidget(self.mixed_axial_step_high,2,1)
+
+        self.parameter_mixed_layout.addWidget(frame,1,0)
 
     def init_parameter_shift_frame(self):
         frame=QFrame()
@@ -184,6 +230,8 @@ class StatisticWindow(QWidget):
             self.fft=self.evaluate_entries_fft()
             self.tv=self.evaluate_entries_tv()
             self.shift=self.evaluate_entries_shift()
+            self.us=self.evaluate_entries_us()
+            self.mixed=self.evaluate_entries_mixed()
             
 
             path_dir = QFileDialog.getExistingDirectory(self, "Select Directory")
@@ -218,7 +266,7 @@ class StatisticWindow(QWidget):
             file_name=file.filename+'_'+'FFT'+'_'+str(file.axial_separation)+'_'+str(file.cell_index)+'_'+str(file.dx1)+'_'+str(file.dx2)+'_'+str(file.dy1)+'_'+str(file.dy2)
             clean_filename=file_name.replace('/', '_').replace(' ', '_')
 
-            calc.calculate_opl_fft(True)   
+            calc.calculate_opl_fft(statistics=True)   
             self.save_mass_contour_images(clean_filename)   
 
             # Saving the calculated data            
@@ -271,6 +319,12 @@ class StatisticWindow(QWidget):
 
                             if self.tv:
                                 self.statistics_tv()
+                            
+                            if self.us:
+                                self.statistics_us()
+
+                            if self.mixed:
+                                self.statistics_mixed()
 
     #evaluation functions for the right entries for the statistic functions    
     def evaluate_entries_shift(self):
@@ -325,6 +379,31 @@ class StatisticWindow(QWidget):
             
         else:
             return fft_axial_step_values
+        
+    def evaluate_entries_us(self):
+        if not self.do_us_calculation.isChecked():
+            return
+        
+        #Calculatesa maximal axial distance
+        if(file.idx_focused_image<(len(file.sample)/2)):
+            max_axial_distance=file.idx_focused_image
+        else: 
+            max_axial_distance=len(file.sample)-file.idx_focused_image-1
+
+        us_axial_step_values=[int(x) for x in self.us_axial_step_input.text().split()]
+        
+        if max_axial_distance<max(us_axial_step_values):
+            raise Exception(f'Axial distance to big! Maximal axial distsance: {max_axial_distance}')
+            
+        else:
+            return us_axial_step_values
+    
+    def evaluate_entries_mixed(self):
+        if not self.do_mixed_calculation.isChecked():
+            return
+        else: 
+            return 1
+
 
 
 
@@ -391,3 +470,41 @@ class StatisticWindow(QWidget):
         msg_box.setWindowTitle(title)
         msg_box.setText(message)
         msg_box.exec_()
+
+    def statistics_us(self):
+        axial_step_values=self.us
+
+        if not axial_step_values:
+            return
+        
+        for i in axial_step_values:
+            file.axial_separation=i
+
+            file_name=file.filename+'_'+'US'+'_'+str(file.axial_separation)+'_'+str(file.cell_index)+'_'+str(file.dx1)+'_'+str(file.dx2)+'_'+str(file.dy1)+'_'+str(file.dy2)
+            clean_filename=file_name.replace('/', '_').replace(' ', '_')
+
+            calc.calculate_opl_US_method(True)   
+            self.save_mass_contour_images(clean_filename)   
+
+            # Saving the calculated data            
+            self.save_csv(clean_filename)            
+            print(clean_filename)
+
+    def statistics_mixed(self):
+        axial_step_values=self.mixed
+
+        if not axial_step_values:
+            return
+        
+        file.axial_separation_high=int(self.mixed_axial_step_high.text())
+        file.axial_separation=int(self.mixed_axial_step_low.text())
+
+        file_name=file.filename+'_'+'MX'+'_'+str(file.axial_separation)+'_'+str(file.axial_separation_high)+'_'+str(file.cell_index)+'_'+str(file.dx1)+'_'+str(file.dx2)+'_'+str(file.dy1)+'_'+str(file.dy2)
+        clean_filename=file_name.replace('/', '_').replace(' ', '_')
+
+        calc.mixing(statistic=True)   
+        self.save_mass_contour_images(clean_filename)   
+
+        # Saving the calculated data            
+        self.save_csv(clean_filename)            
+        print(clean_filename)

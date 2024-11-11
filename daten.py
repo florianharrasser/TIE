@@ -74,6 +74,9 @@ class Daten():
         self.draw_y=[] # x-values of the drawn contour        
         self.inflatefactor:int=1        
 
+        """ Parameter for mixing """
+        self.axial_separation_high:int=1       
+
 
     @property
     def csv_dict(self):
@@ -91,6 +94,7 @@ class Daten():
             "index infocus image": self.idx_focused_image,
             "index infocus image calculated": self.idx_focused_image_calc,
             "axial seperation": self.axial_separation,
+            "axial seperation": self.axial_separation_high,
     
             "index background": self.idx_background,
             "index sample": self.idx_sample,

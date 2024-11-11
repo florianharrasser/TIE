@@ -80,6 +80,8 @@ class MplCanvas(FigureCanvasQTAgg):
         self.main_window.btn_calculate_FFT.setEnabled(True)
         self.main_window.btn_calculate_TV.setEnabled(True)
         self.main_window.txt_axial_separation.setEnabled(True)
+        self.main_window.btn_calculate_US.setEnabled(True)
+        self.main_window.btn_calculate_FFT_mixing.setEnabled(True)
     
     def toggle_selector(self, event):
         if event.key in ['Q', 'q'] and self.RS.active:
