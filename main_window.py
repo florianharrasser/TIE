@@ -78,7 +78,9 @@ class Main(QMainWindow):
         toolBar.addAction(self.btn_show_select_window)
 
         self.btn_show_setting_window = QAction("Settings")
+        self.btn_show_setting_window.setDisabled(True)
         self.btn_show_setting_window.triggered.connect(self.show_setting_window)
+        self.btn_show_setting_window.setToolTip("Hit this button to set the settings for the calculation")
         toolBar.addAction(self.btn_show_setting_window)
 
         self.btn_show_evaluation_window=QAction("Evaluation")
@@ -154,7 +156,7 @@ class Main(QMainWindow):
         self.txt_axial_separation_high = QLineEdit()
         self.txt_axial_separation_high.setValidator(QIntValidator())
         self.txt_axial_separation_high.setToolTip("This field specifies the axial distance (index) for the calculation with the FFT.")
-        # self.txt_axial_separation_high.setDisabled(True)
+        self.txt_axial_separation_high.setDisabled(True)
         self.txt_axial_separation_high.setFixedSize(50, 30)
         self.txt_axial_separation_high.setText("1")  # Example default value
         frame_layout.addWidget(self.txt_axial_separation_high, 1, 1, alignment=Qt.AlignmentFlag.AlignLeft)

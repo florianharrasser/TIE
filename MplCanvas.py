@@ -19,7 +19,7 @@ class MplCanvas(FigureCanvasQTAgg):
 
         self.axes = fig.add_subplot(111)
         self.file=file
-        self.main_window:mainWindow=mainWindow
+        self.main_window=mainWindow
         super(MplCanvas, self).__init__(fig)
 
     def with_selector(self):
@@ -80,6 +80,7 @@ class MplCanvas(FigureCanvasQTAgg):
         self.main_window.btn_calculate_FFT.setEnabled(True)
         self.main_window.btn_calculate_TV.setEnabled(True)
         self.main_window.txt_axial_separation.setEnabled(True)
+        self.main_window.txt_axial_separation_high.setEnabled(True)
         self.main_window.btn_calculate_US.setEnabled(True)
         self.main_window.btn_calculate_FFT_mixing.setEnabled(True)
     
