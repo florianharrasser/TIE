@@ -20,6 +20,7 @@ from PyQt6.QtGui import QIntValidator
 from state import State, FileFormat
 import numpy as np
 import multipagetiff as mtif
+import tifffile as tif
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
 
@@ -408,13 +409,13 @@ class Main(QMainWindow):
     #dialog for uploading files
     def open_dialog(self):
         try:   
-            path, _ = QFileDialog.getOpenFileName(self, "Open File", "", "LIF Files (*.lif);;TIF Files (*.tif)")
+            path, _ = QFileDialog.getOpenFileName(self, "Open File", "", "LIF Files (*.lif);;TIF Files (*.tif);;STK Files (*.stk)")
 
             if path:
                 file.reset()
                 if path.endswith('.lif'):
                     self.initialize_lif_file(path)
-                if path.endswith('.tif'):
+                if path.endswith('.stk') or path.endswith('.tif'):
                     self.initialize_tif_file(path)
             else: 
                 return                
@@ -466,7 +467,8 @@ class Main(QMainWindow):
         file.name=[[],[]]
 
         if path:
-            sample_stack=mtif.read_stack(path)
+            sample_stack=tif.imread(path)
+            # sample_stack=mtif.read_stack(path)
             file.sample=np.asarray([slice for slice in sample_stack])
             file.file[0]=file.sample
             file.name[0]= self.extract_filename(path)

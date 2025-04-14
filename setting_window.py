@@ -9,6 +9,7 @@ import calculation as calc
 from state import FileFormat
 import numpy as np
 import multipagetiff as mtif
+import tifffile as tiff 
 
 
 class SettingWindow(QWidget):
@@ -124,20 +125,22 @@ class SettingWindow(QWidget):
 
     #if a .tif-file gets uploaded a different approach is choosen to save sample and background
     def load_sample(self):
-        path, _ = QFileDialog.getOpenFileName(self, "Open File", "", "TIF Files (*.tif)")
+        path, _ = QFileDialog.getOpenFileName(self, "Open File", "", "TIF Files (*.tif);; STK Files (*.stk)")
 
         if path:
-            sample_stack=mtif.read_stack(path)
+            # sample_stack=mtif.read_stack(path)
+            sample_stack=tiff.imread(path)
             file.sample=np.asarray([slice for slice in sample_stack])
             file.file[0]=file.sample
             file.name[0]= self.main_window.extract_filename(path)
             self.lbl_background.setText(file.name[0])
 
     def load_background(self):
-        path, _ = QFileDialog.getOpenFileName(self, "Open File", "", "TIF Files (*.tif)")
+        path, _ = QFileDialog.getOpenFileName(self, "Open File", "", "TIF Files (*.tif);; STK Files (*.stk)")
 
         if path:
-            bgd_stack=mtif.read_stack(path)
+            # bgd_stack=mtif.read_stack(path)
+            bgd_stack=tiff.imread(path)
             file.background=np.asarray([slice for slice in bgd_stack])
             file.file[1]=file.background
             file.name[1]= self.main_window.extract_filename(path)
