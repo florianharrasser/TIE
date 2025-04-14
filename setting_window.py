@@ -179,6 +179,7 @@ class SettingWindow(QWidget):
                 self.main_window.lbl_filename.setText("Current file: "+ file.filename)
                 self.main_window.lbl_focused_image.setText("Index focused image: "+str(file.idx_focused_image))
                 self.main_window.btn_show_select_window.setDisabled(False)
+                self.main_window.btn_show_setting_window.setDisabled(False)
                 self.main_window.btn_show_raw_image.setDisabled(False)
                 self.main_window.btn_show_stack.setDisabled(False)
                 self.main_window.btn_show_background.setDisabled(False)

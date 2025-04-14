@@ -11,7 +11,7 @@ from daten import file
 class SelectWindow(QWidget):
     def __init__(self, file, main_window, len_sample):
         super().__init__()        
-        self.setWindowTitle("Select File")
+        self.setWindowTitle("Select Focused Image")
 
         
         self.mc = MplCanvas(self, width=50, height=40, dpi=100)
@@ -47,7 +47,7 @@ class SelectWindow(QWidget):
         self.lbl_idx_of_image=QLabel("0")
         self.page_layout.addWidget(self.lbl_idx_of_image, 4, 1, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        self.btn_save_idx_focused_image=QPushButton("Choose this image")
+        self.btn_save_idx_focused_image=QPushButton("Choose this Image")
         self.btn_save_idx_focused_image.clicked.connect(self.save_idx_focused_image)
         self.page_layout.addWidget(self.btn_save_idx_focused_image, 4, 0, alignment=Qt.AlignmentFlag.AlignCenter)
        
