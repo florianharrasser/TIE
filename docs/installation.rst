@@ -1,5 +1,5 @@
 Installation
-==================	
+==================
 
 *Follow the instructions below to install the software on your system.*
 
