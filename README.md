@@ -25,3 +25,6 @@ For running the software you can execute the following line in your terminal aft
 ``` 
 python main_window.py
 ```
+
+# Manual
+Should you require guidance, the manual can be accessed via the [official website](https://tie-manual.readthedocs.io/).
