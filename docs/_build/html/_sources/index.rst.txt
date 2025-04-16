@@ -55,7 +55,6 @@ For more details, refer to the `official page of the matplotlib library <https:/
       :maxdepth: 4
       :caption: Manual
 
-      introduction
       installation
       file_upload
       settings

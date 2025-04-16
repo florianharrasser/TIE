@@ -178,7 +178,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -200,12 +200,11 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">Manual</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="file_upload.html">Uploading Files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="settings.html">Settings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="focused_image.html">Selecting Focused Image</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cell_selection.html">Cell Selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cell_selection.html">Initial Cell Region Selection</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mass_calculation.html">Dry Mass Calculation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contour_detection.html">Contour Detection</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">File Saving</a></li>
@@ -245,7 +244,7 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
@@ -253,10 +252,81 @@
         <article role="main" id="furo-main-content">
           <section id="file-saving">
 <h1>File Saving<a class="headerlink" href="#file-saving" title="Link to this heading">¶</a></h1>
-<p>After calculating the mass, it is possible to save the calculated mass and the corresponding parameters.
-Clicking on the <code class="docutils literal notranslate"><span class="pre">Save</span></code> button in the toolbar opens a dialog for saving the files.
-A <code class="docutils literal notranslate"><span class="pre">.csv</span></code> file is saved with the important parameters for reconstructing the calculation; in addition, all three plots are saved in the same
-directory.</p>
+<p>This chapter provides information about the saving and the stored parameters.</p>
+<hr class="docutils" />
+<p>Once the calculation is complete, the results can be stored for future reference.</p>
+<p>Click the “Save” button in the toolbar to open a dialog for saving the files.</p>
+<p>The data is saved in a dedicated directory for the specific cell.
+This directory contains a .csv file that includes the key parameters needed to reconstruct the calculation and its results
+(for detailed information, see below).
+Additionally, the three generated plots are saved in the same directory and the corresponfing contour is saven in a <code class="docutils literal notranslate"><span class="pre">.npy</span></code> - file.
+The directory is named after the uploaded file.</p>
+<section id="csv-file">
+<h2>.csv - File<a class="headerlink" href="#csv-file" title="Link to this heading">¶</a></h2>
+<p>The .csv file contains the following parameters:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>Naming:</strong></dt><dd><ul>
+<li><p>name: The name of the file that was uploaded.</p></li>
+<li><p>calculation option: The method used for the calculation (e.g., FFT, TV)</p></li>
+<li><p>indexing: This index gets increased if a file with the same name gets saved, to not overwrite the previous one.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Settings:</strong></dt><dd><ul>
+<li><p>magnification: the microscope magnification used during image aquisition</p></li>
+<li><p>pixel size: the physical size of each individual pixel in the camera sensor (in nanometer)</p></li>
+<li><p>axial step: the distance moved by the microscope stage or the focal plane along the z-axis between each image in the z-stack (in nanometer)</p></li>
+<li><p>constant <span class="math notranslate nohighlight">\(\alpha\)</span>:  tabulated constant for mass calculation (in ml/g)</p></li>
+<li><p>regularisation constant <span class="math notranslate nohighlight">\(\lambda\)</span>: penalty factor in the TV-regularisation</p></li>
+<li><p>number of iterations for TV-Norm: number used for the TV-regularisation method</p></li>
+<li><p>index infocus image: used index of the focused image in the z-stack</p></li>
+<li><p>index infocus image calculated: calculated index of the focused image in the z-stack</p></li>
+<li><p>axial separation: the distance between the focused image and the background image in the z-stack (in nanometer)</p></li>
+<li><p>axial separation high: the distance between the focused image and the background image in the z-stack (in nanometer) for the (FFT_mixing method)</p></li>
+<li><p>index background: index of the background image in the z-stack used for stack calculation</p></li>
+<li><p>index sample: index of the sample image in the z-stack used for stack calculation</p></li>
+<li><p>x1: x-coordinate of the left upper corner of the selected cell region</p></li>
+<li><p>x2: x-coordinate of the right lower corner of the selected cell region</p></li>
+<li><p>y1: y-coordinate of the left upper corner of the selected cell region</p></li>
+<li><p>y2: y-coordinate of the right lower corner of the selected cell region</p></li>
+<li><p>dx1: <span class="math notranslate nohighlight">\(\Delta\)</span> x-coordinate of the left left side of the selected cell region (statistics module)</p></li>
+<li><p>dx2: <span class="math notranslate nohighlight">\(\Delta\)</span> x-coordinate of the right right side of the selected cell region (statistics module)</p></li>
+<li><p>dy1: <span class="math notranslate nohighlight">\(\Delta\)</span> y-coordinate of the left upper corner of the selected cell region (statistics module)</p></li>
+<li><p>dy2: <span class="math notranslate nohighlight">\(\Delta\)</span> y-coordinate of the right lower corner of the selected cell region (statistics module)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Paramters:</strong></dt><dd><ul>
+<li><p>Threshold: the sensitivity of contour detection</p></li>
+<li><p>index of contour: the index of the selected contour</p></li>
+<li><p>area of contour in um^2: the area of the selected contour in <span class="math notranslate nohighlight">\(\mu m^2\)</span></p></li>
+<li><p>inflate factor: the factor used to inflate the contour for the mass calculation</p></li>
+<li></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Results:</strong></dt><dd><ul>
+<li><p>total mass image: the total mass of the image in ng</p></li>
+<li><p>mean mass image: the mean mass of the image in ng</p></li>
+<li><p>mass inside contour: the mass of the image inside the contour in ng</p></li>
+<li><p>mean mass on contourline: the mean mass of the image on the contourline in ng</p></li>
+<li><p>mass outside max: the maximum mass of the image outside the contour in ng</p></li>
+<li><p>mass outside min: the minimum mass of the image outside the contour in ng</p></li>
+<li><p>mass outside std: the standard deviation of the mass of the image outside the contour in ng</p></li>
+<li><p>mass outside mean: the mean mass of the image outside the contour in ng</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
 </section>
 
         </article>
@@ -302,8 +372,27 @@ directory.</p>
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">File Saving</a><ul>
+<li><a class="reference internal" href="#csv-file">.csv - File</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>
@@ -312,5 +401,6 @@ directory.</p>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=5fa4622c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     </body>
 </html>

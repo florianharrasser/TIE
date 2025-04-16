@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Contour Detection" href="contour_detection.html" /><link rel="prev" title="Cell Selection" href="cell_selection.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Contour Detection" href="contour_detection.html" /><link rel="prev" title="Initial Cell Region Selection" href="cell_selection.html" />
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
         <title>Dry Mass Calculation - TIE 1 documentation</title>
@@ -200,12 +200,11 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">Manual</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="file_upload.html">Uploading Files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="settings.html">Settings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="focused_image.html">Selecting Focused Image</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cell_selection.html">Cell Selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cell_selection.html">Initial Cell Region Selection</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Dry Mass Calculation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contour_detection.html">Contour Detection</a></li>
 <li class="toctree-l1"><a class="reference internal" href="saving.html">File Saving</a></li>
@@ -252,19 +251,40 @@
         </div>
         <article role="main" id="furo-main-content">
           <section id="dry-mass-calculation">
-<h1>Dry Mass Calculation<a class="headerlink" href="#dry-mass-calculation" title="Link to this heading">¶</a></h1>
-<p>section{Dry Mass Calculation}
-The button and thus the dry mass calculation can only be carried out if an area is correctly defined, see section~ref{sec:cell-selection}.</p>
-<p>Two options are available for calculating the optical path delay (opd). The Fast Fourier Transform <a class="reference internal" href="#ref-fft"><span class="std std-ref">FFT</span></a> and the
-Total Variation (TV) Regularization <span class="xref std std-ref">_ref_TV</span>. For both calculation methods, it is important that there are no cells or other artifacts
-(dust, noise, air bubbles, etc.) at the boundaries of the selected area.</p>
+<span id="mass-calculation"></span><h1>Dry Mass Calculation<a class="headerlink" href="#dry-mass-calculation" title="Link to this heading">¶</a></h1>
+<p><em>This chapter explains how to calculate the dry mass of a cell.
+There are different methods available for this calculation, which are described in the following sections.</em></p>
+<hr class="docutils" />
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The dry mass calculation is only available if the <a class="reference internal" href="cell_selection.html#cell-selection"><span class="std std-ref">Initial Cell Region Selection</span></a> has been made correctly.
+If no cell is selected, the calculation cannot be performed.
+The buttons for the calculation will be disabled until a valid selection is made.</p>
+</div>
+<p>The calculation in this step evaluates the optical path length (opd) of the selected region selected prevoiusly. From the opd,
+the dry mass can be calculated. The result is shown in the bottom left corner.
+When executing the calculation, in the whole selected region the calculation gets executed. The result of this calculation is
+displayed in the bottom left corner of the window.</p>
+<a class="reference internal image-reference" href="_images/drymass_result.png"><img alt="_images/drymass_result.png" class="align-center" src="_images/drymass_result.png" style="width: 500px;" />
+</a>
+<p>For the calculation there are implemented various methods:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#ref-fft"><span class="std std-ref">FFT (Fast Fourier Transform)</span></a></p></li>
+<li><p><a class="reference internal" href="#ref-tv"><span class="std std-ref">TV Regularization</span></a></p></li>
+<li><p>Other??</p></li>
+</ul>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>ATTENTION:
-Here are now more possibilities for the calculation. Add them!</p>
+<p>For both calculation methods, it is important that there are no cells or other artifacts
+(dust, noise, air bubbles, etc.) at the boundaries of the selected area.</p>
 </div>
-<section id="fft">
-<span id="ref-fft"></span><h2>FFT<a class="headerlink" href="#fft" title="Link to this heading">¶</a></h2>
+<div class="admonition error">
+<p class="admonition-title">Error</p>
+<p>ATTENTION:
+Here are now more possibilities for the calculation.</p>
+</div>
+<section id="fft-fast-fourier-transform">
+<span id="ref-fft"></span><h2>FFT (Fast Fourier Transform)<a class="headerlink" href="#fft-fast-fourier-transform" title="Link to this heading">¶</a></h2>
 <p>It is important to enter an axis distance for the calculation. This parameter is used to define the axial distance for the derivative
 calculation. The axial distance can only be selected so that the stack is not exceeded during addition with the focused image and cannot
 be less than 0 during subtraction. A larger axial distance leads to a blurred effect in the reconstruction. In order to obtain the best
@@ -327,7 +347,7 @@ iterations lead to a poor reconstruction, while too many iterations do not influ
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Cell Selection</div>
+                <div class="title">Initial Cell Region Selection</div>
                 
               </div>
             </a>
@@ -362,7 +382,7 @@ iterations lead to a poor reconstruction, while too many iterations do not influ
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Dry Mass Calculation</a><ul>
-<li><a class="reference internal" href="#fft">FFT</a></li>
+<li><a class="reference internal" href="#fft-fast-fourier-transform">FFT (Fast Fourier Transform)</a></li>
 <li><a class="reference internal" href="#tv-regularization">TV Regularization</a></li>
 </ul>
 </li>

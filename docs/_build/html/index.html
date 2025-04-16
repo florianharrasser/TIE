@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Introduction" href="introduction.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Installation" href="installation.html" />
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
         <title>TIE 1 documentation</title>
@@ -200,12 +200,11 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">Manual</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="file_upload.html">Uploading Files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="settings.html">Settings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="focused_image.html">Selecting Focused Image</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cell_selection.html">Cell Selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cell_selection.html">Initial Cell Region Selection</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mass_calculation.html">Dry Mass Calculation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contour_detection.html">Contour Detection</a></li>
 <li class="toctree-l1"><a class="reference internal" href="saving.html">File Saving</a></li>
@@ -297,7 +296,6 @@ For more details, refer to the <a class="reference external" href="https://matpl
 <div><div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Manual</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="file_upload.html">Uploading Files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="settings.html">Settings</a><ul>
@@ -306,23 +304,27 @@ For more details, refer to the <a class="reference external" href="https://matpl
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="focused_image.html">Selecting Focused Image</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cell_selection.html">Cell Selection</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="cell_selection.html">Initial Cell Region Selection</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="cell_selection.html#available-views">Available views</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cell_selection.html#selecting-the-cell">Selecting the Cell</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="mass_calculation.html">Dry Mass Calculation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="mass_calculation.html#fft">FFT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mass_calculation.html#fft-fast-fourier-transform">FFT (Fast Fourier Transform)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mass_calculation.html#tv-regularization">TV Regularization</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="contour_detection.html">Contour Detection</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contour_detection.html#contour-selection-options">Contour Selection Options:</a></li>
 <li class="toctree-l2"><a class="reference internal" href="contour_detection.html#generate-contour">Generate Contour</a></li>
 <li class="toctree-l2"><a class="reference internal" href="contour_detection.html#draw-contour-manually">Draw Contour Manually</a></li>
 <li class="toctree-l2"><a class="reference internal" href="contour_detection.html#store-contour">Store Contour</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="saving.html">File Saving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="saving.html">File Saving</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="saving.html#csv-file">.csv - File</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="evaluation.html">Evaluation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="statistics.html">Statistics</a></li>
 </ul>
@@ -335,12 +337,12 @@ For more details, refer to the <a class="reference external" href="https://matpl
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="introduction.html">
+          <a class="next-page" href="installation.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Introduction</div>
+                <div class="title">Installation</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>

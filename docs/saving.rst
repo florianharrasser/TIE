@@ -1,7 +1,65 @@
 File Saving
 ==============
 
-After calculating the mass, it is possible to save the calculated mass and the corresponding parameters. 
-Clicking on the ``Save`` button in the toolbar opens a dialog for saving the files. 
-A ``.csv`` file is saved with the important parameters for reconstructing the calculation; in addition, all three plots are saved in the same 
-directory.
+This chapter provides information about the saving and the stored parameters.
+
+*********************************************************************************
+
+Once the calculation is complete, the results can be stored for future reference.
+
+Click the "Save" button in the toolbar to open a dialog for saving the files.
+
+The data is saved in a dedicated directory for the specific cell.
+This directory contains a .csv file that includes the key parameters needed to reconstruct the calculation and its results 
+(for detailed information, see below).
+Additionally, the three generated plots are saved in the same directory and the corresponfing contour is saven in a ``.npy`` - file. 
+The directory is named after the uploaded file.
+
+
+.csv - File
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The .csv file contains the following parameters:
+
+- **Naming:**    
+    - name: The name of the file that was uploaded.
+    - calculation option: The method used for the calculation (e.g., FFT, TV)
+    - indexing: This index gets increased if a file with the same name gets saved, to not overwrite the previous one.
+
+- **Settings:**
+    - magnification: the microscope magnification used during image aquisition
+    - pixel size: the physical size of each individual pixel in the camera sensor (in nanometer)
+    - axial step: the distance moved by the microscope stage or the focal plane along the z-axis between each image in the z-stack (in nanometer)
+    - constant :math:`\alpha`:  tabulated constant for mass calculation (in ml/g)
+    - regularisation constant :math:`\lambda`: penalty factor in the TV-regularisation
+    - number of iterations for TV-Norm: number used for the TV-regularisation method
+    - index infocus image: used index of the focused image in the z-stack
+    - index infocus image calculated: calculated index of the focused image in the z-stack
+    - axial separation: the distance between the focused image and the background image in the z-stack (in nanometer)
+    - axial separation high: the distance between the focused image and the background image in the z-stack (in nanometer) for the (FFT_mixing method)
+    - index background: index of the background image in the z-stack used for stack calculation
+    - index sample: index of the sample image in the z-stack used for stack calculation
+    - x1: x-coordinate of the left upper corner of the selected cell region 
+    - x2: x-coordinate of the right lower corner of the selected cell region
+    - y1: y-coordinate of the left upper corner of the selected cell region
+    - y2: y-coordinate of the right lower corner of the selected cell region
+    - dx1: :math:`\Delta` x-coordinate of the left left side of the selected cell region (statistics module)
+    - dx2: :math:`\Delta` x-coordinate of the right right side of the selected cell region (statistics module)
+    - dy1: :math:`\Delta` y-coordinate of the left upper corner of the selected cell region (statistics module)
+    - dy2: :math:`\Delta` y-coordinate of the right lower corner of the selected cell region (statistics module)
+
+- **Paramters:**
+    - Threshold: the sensitivity of contour detection
+    - index of contour: the index of the selected contour
+    - area of contour in um^2: the area of the selected contour in :math:`\mu m^2`
+    - inflate factor: the factor used to inflate the contour for the mass calculation
+    - 
+- **Results:**
+    - total mass image: the total mass of the image in ng
+    - mean mass image: the mean mass of the image in ng
+    - mass inside contour: the mass of the image inside the contour in ng
+    - mean mass on contourline: the mean mass of the image on the contourline in ng
+    - mass outside max: the maximum mass of the image outside the contour in ng
+    - mass outside min: the minimum mass of the image outside the contour in ng
+    - mass outside std: the standard deviation of the mass of the image outside the contour in ng
+    - mass outside mean: the mean mass of the image outside the contour in ng
+  

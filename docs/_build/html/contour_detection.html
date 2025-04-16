@@ -200,12 +200,11 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">Manual</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="file_upload.html">Uploading Files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="settings.html">Settings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="focused_image.html">Selecting Focused Image</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cell_selection.html">Cell Selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cell_selection.html">Initial Cell Region Selection</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mass_calculation.html">Dry Mass Calculation</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Contour Detection</a></li>
 <li class="toctree-l1"><a class="reference internal" href="saving.html">File Saving</a></li>
@@ -253,44 +252,80 @@
         <article role="main" id="furo-main-content">
           <section id="contour-detection">
 <span id="id1"></span><h1>Contour Detection<a class="headerlink" href="#contour-detection" title="Link to this heading">¶</a></h1>
-<p>The opd must be calculated for contour detection (that means the bottom left plot can not be empty). The options for selecting a contour
-are listed here as subsections. The mass of the contour displayed in the plot is calculated by pressing the <code class="docutils literal notranslate"><span class="pre">Calculate</span> <span class="pre">contour</span> <span class="pre">mass</span></code> button;
-this process is the same for all contour recognition options.</p>
+<p><em>Contour detection is a method used to identify the outline of a cell. This is crucial for calculating the dry mass,
+as the dry mass is computed only within the contour.</em></p>
+<hr class="docutils" />
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Contour detection is available only if the :ref:mass_calculation has been completed correctly.
+The contour detection buttons and slider will remain disabled until a valid mass calculation has been made.</p>
+</div>
+<section id="contour-selection-options">
+<h2>Contour Selection Options:<a class="headerlink" href="#contour-selection-options" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="#ref-generate-contour"><span class="std std-ref">Generate Contour</span></a> - The contour is generated automatically based on the image data.</p></li>
+<li><p><a class="reference internal" href="#ref-draw-contour-manually"><span class="std std-ref">Draw Contour Manually</span></a> - The contour is drawn manually by the user.</p></li>
+<li><p><a class="reference internal" href="#ref-store-contour"><span class="std std-ref">Store Contour</span></a> - The contour is saved for later use.</p></li>
+</ul>
+<p>The mass of the contour displayed in the plot is calculated by pressing the <code class="docutils literal notranslate"><span class="pre">Calculate</span> <span class="pre">contour</span> <span class="pre">mass</span></code> button.
+This process is the same for all contour detection options.</p>
+</section>
 <section id="generate-contour">
-<h2>Generate Contour<a class="headerlink" href="#generate-contour" title="Link to this heading">¶</a></h2>
-<p>The contour detection has already taken place and is shown as yellow lines in the graphic. At the beginning, all possible contours are displayed.</p>
-<p>Now it is important to set the parameters for contour detection so that one of these contours fits perfectly the cell.
-There are two parameters for this. The <code class="docutils literal notranslate"><span class="pre">Threshold</span></code> can be seen as a parameter for controlling the sensitivity of contour detection.
-If this parameter is increased, the contour is only drawn if large intensity gaps exist. The lower the threshold value is selected,
-the more sensitive the contour detection is for small intensity gaps.</p>
-<a class="reference internal image-reference" href="_images/treshold.png"><img alt="_images/treshold.png" class="align-center" src="_images/treshold.png" style="width: 500px;" />
+<span id="ref-generate-contour"></span><h2>Generate Contour<a class="headerlink" href="#generate-contour" title="Link to this heading">¶</a></h2>
+<p>The initial contour detection occurs automatically when the mass calculation is executed correctly.
+The contours are shown as yellow lines in the graphic, and initially, all possible contours are displayed. In addition to
+this view, in the bottom right cornern of the image, the contours are drawn in the raw image. This provides an easier
+and more intuitive way to select the correct contour.</p>
+<a class="reference internal image-reference" href="_images/contour_detection_contours.png"><img alt="_images/contour_detection_contours.png" class="align-center" src="_images/contour_detection_contours.png" style="width: 80%;" />
 </a>
-<p>Once the correct threshold value has been found, the contour can be selected using the <code class="docutils literal notranslate"><span class="pre">Contours</span></code> slider. If you move the slider all the
-way to the left, all contours are displayed. The contours are displayed individually if you move the slider to the right. A contour must be
-selected for the further calculation steps.</p>
-<a class="reference internal image-reference" href="_images/contour_selection.png"><img alt="_images/contour_selection.png" class="align-center" src="_images/contour_selection.png" style="width: 500px;" />
+<p>In the next step, it’s important to adjust the parameters for contour detection to ensure that one of the displayed contours perfectly
+matches the cell. Be careful not to get confused from other contours that aren’t relevant to the cell, because initially,
+all contours are displayed.</p>
+<p>The parameter <code class="docutils literal notranslate"><span class="pre">Threshold</span></code> the sensitivity of contour detection.
+Increasing the threshold means that only large intensity gaps will be detected,
+while lowering it makes the contour detection more sensitive to smaller intensity variations.</p>
+<a class="reference internal image-reference" href="_images/treshold.png"><img alt="_images/treshold.png" class="align-center" src="_images/treshold.png" style="width: 100%;" />
 </a>
-<p>If the contour found does not cover the entire cell, the contour can be inflated or deflated.</p>
-<a class="reference internal image-reference" href="_images/inflate.png"><img alt="_images/inflate.png" class="align-center" src="_images/inflate.png" style="width: 500px;" />
+<p>Once the correct threshold is set, the contour can be selected using the <code class="docutils literal notranslate"><span class="pre">Contours</span></code> slider.
+Moving the slider all the way to the left will display all contours. As you move the slider to the right,
+the contours are displayed individually. A single contour must be selected for the next calculation steps.
+(In the first image, the detected contours area numbered in red, this is just for visualization and not part of the GUI.)</p>
+<a class="reference internal image-reference" href="_images/contour_selection.png"><img alt="_images/contour_selection.png" class="align-center" src="_images/contour_selection.png" style="width: 100%;" />
 </a>
-<p>Once you have found the correct contour, you can calculate the mass within the contour by clicking on the <code class="docutils literal notranslate"><span class="pre">Calculate</span> <span class="pre">Contour</span> <span class="pre">Mass</span></code> button.</p>
+<p>If the contour found does not cover the entire cell, the contour can be inflated or deflated, to adjust the size.</p>
+<a class="reference internal image-reference" href="_images/inflate.png"><img alt="_images/inflate.png" class="align-center" src="_images/inflate.png" style="width: 100%;" />
+</a>
+<p>Once you have found a matching contour, you can select the contour and calculate the mass within the contour by
+clicking on the <code class="docutils literal notranslate"><span class="pre">Calculate</span> <span class="pre">Contour</span> <span class="pre">Mass</span></code> button.</p>
 </section>
 <section id="draw-contour-manually">
-<h2>Draw Contour Manually<a class="headerlink" href="#draw-contour-manually" title="Link to this heading">¶</a></h2>
-<p>If no contour can be found when setting the parameter correctly, it is possible to draw the contour manually by selecting the <code class="docutils literal notranslate"><span class="pre">Draw</span> <span class="pre">contour</span> <span class="pre">manually</span></code>
-button. The created contours are hidden and by clicking with the right mouse button on the image, points can be drawn to set the contour.
-To delete this contour, click on the image again and start drawing. When you release the mouse button, the shape is drawn. When satisfied
-with your drawn contour, click the <code class="docutils literal notranslate"><span class="pre">Calculate</span> <span class="pre">contour</span> <span class="pre">mass</span></code> button. This step calculates the mass of the contour.</p>
-<p>Click the <code class="docutils literal notranslate"><span class="pre">Generate</span> <span class="pre">contour</span></code> button to exit manual contour drawing mode.</p>
-<a class="reference internal image-reference" href="_images/contour_manually.png"><img alt="_images/contour_manually.png" class="align-center" src="_images/contour_manually.png" style="width: 500px;" />
+<span id="ref-draw-contour-manually"></span><h2>Draw Contour Manually<a class="headerlink" href="#draw-contour-manually" title="Link to this heading">¶</a></h2>
+<p>If no contour can be found with the prevoiusly set parameter, , you can manually draw the contour by clicking the
+<code class="docutils literal notranslate"><span class="pre">Draw</span> <span class="pre">contour</span> <span class="pre">manually</span></code> button. This will hide the automatically generated contours. By clicking with the right mouse button on the image,
+points can be drawn which form later the contour.
+To draw the contour, right-click on the image to place points that will form the contour. When you release the mouse button,
+the shape is drawn.
+Once you’re satisfied with the contour, click the “Calculate Contour Mass” button to calculate the mass within the contour.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To delete the manually drawn contour, click on the image again and start drawing a new one.</p>
+</div>
+<a class="reference internal image-reference" href="_images/contour_manually.png"><img alt="_images/contour_manually.png" class="align-center" src="_images/contour_manually.png" style="width: 100%;" />
 </a>
+<p>Hitting the <code class="docutils literal notranslate"><span class="pre">Generate</span> <span class="pre">contour</span></code> button will exit the manual contour drawing mode.</p>
 </section>
 <section id="store-contour">
-<h2>Store Contour<a class="headerlink" href="#store-contour" title="Link to this heading">¶</a></h2>
-<p>Contours can also be saved for the time during which no new file is uploaded. To save, click on the ‘Save contour’ button.
-To retrieve the contour, press <code class="docutils literal notranslate"><span class="pre">Retrieve</span> <span class="pre">contour</span></code>. If the retrieved contour is shown, the button name changes to
-<cite>Hide saved contour</cite> and is highlighted in blue. It can only be saved a single contour. To save a new contour, hit the ‘<code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">Contour</span></code> button again.</p>
-<a class="reference internal image-reference" href="_images/store_contour.png"><img alt="_images/store_contour.png" class="align-center" src="_images/store_contour.png" style="width: 500px;" />
+<span id="ref-store-contour"></span><h2>Store Contour<a class="headerlink" href="#store-contour" title="Link to this heading">¶</a></h2>
+<p>If you need to use the same contour for multiple calculations, you can store it.
+The stored contour remains until a new file is uploaded.</p>
+<p>To save a contour, click the <code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">Contour</span></code> button, and the currently displayed contour will be stored.
+To retrieve the stored contour, press the <code class="docutils literal notranslate"><span class="pre">Retrieve</span> <span class="pre">Contour</span></code> button. When the stored contour is displayed,
+the button changes to <strong>“Hide Saved Contour”</strong> and is highlighted in blue.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Only one contour can be stored at a time. If you save a new contour, the previous one will be overwritten.</p>
+</div>
+<a class="reference internal image-reference" href="_images/store_contour.png"><img alt="_images/store_contour.png" class="align-center" src="_images/store_contour.png" style="width: 80%;" />
 </a>
 </section>
 </section>
@@ -351,6 +386,7 @@ To retrieve the contour, press <code class="docutils literal notranslate"><span 
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Contour Detection</a><ul>
+<li><a class="reference internal" href="#contour-selection-options">Contour Selection Options:</a></li>
 <li><a class="reference internal" href="#generate-contour">Generate Contour</a></li>
 <li><a class="reference internal" href="#draw-contour-manually">Draw Contour Manually</a></li>
 <li><a class="reference internal" href="#store-contour">Store Contour</a></li>

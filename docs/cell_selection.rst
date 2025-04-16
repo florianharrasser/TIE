@@ -1,5 +1,7 @@
-Cell Selection
-==================
+.. _cell_selection:
+
+Initial Cell Region Selection
+======================================
 
 *This step explains how to select a cell for further calculations.*
 

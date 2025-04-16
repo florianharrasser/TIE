@@ -1,24 +1,50 @@
+.. _mass_calculation:
+
 Dry Mass Calculation
 =========================
 
+*This chapter explains how to calculate the dry mass of a cell. 
+There are different methods available for this calculation, which are described in the following sections.*
 
-\section{Dry Mass Calculation}
-The button and thus the dry mass calculation can only be carried out if an area is correctly defined, see section~\ref{sec:cell-selection}.
+*************************************************************************************************************
 
-Two options are available for calculating the optical path delay (opd). The Fast Fourier Transform :ref:`ref_FFT` and the 
-Total Variation (TV) Regularization :ref:`_ref_TV`. For both calculation methods, it is important that there are no cells or other artifacts 
-(dust, noise, air bubbles, etc.) at the boundaries of the selected area.
+.. note::
+    The dry mass calculation is only available if the :ref:`cell_selection` has been made correctly. 
+    If no cell is selected, the calculation cannot be performed.
+    The buttons for the calculation will be disabled until a valid selection is made.
 
 
-.. warning:: 
+The calculation in this step evaluates the optical path length (opd) of the selected region selected prevoiusly. From the opd, 
+the dry mass can be calculated. The result is shown in the bottom left corner. 
+When executing the calculation, in the whole selected region the calculation gets executed. The result of this calculation is 
+displayed in the bottom left corner of the window.
+
+.. image:: _img/drymass_result.png
+    :width: 500
+    :align: center
+
+
+
+For the calculation there are implemented various methods:
+
+- :ref:`ref_FFT`
+- :ref:`ref_TV`
+- Other??
+
+.. warning::
+   For both calculation methods, it is important that there are no cells or other artifacts 
+   (dust, noise, air bubbles, etc.) at the boundaries of the selected area.
+
+.. error::
     ATTENTION:
-    Here are now more possibilities for the calculation. Add them!
+    Here are now more possibilities for the calculation.
 
 
 
 .. _ref_FFT:
-FFT
-~~~~~~~~~~~~~~~~~~~~~~~
+
+FFT (Fast Fourier Transform)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It is important to enter an axis distance for the calculation. This parameter is used to define the axial distance for the derivative 
 calculation. The axial distance can only be selected so that the stack is not exceeded during addition with the focused image and cannot 
@@ -35,9 +61,13 @@ If the axial distance is within the range, the optical path delay is calculated 
     :width: 500
     :align: center
 
+
+
+
 .. _ref_TV:
+
 TV Regularization
-~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For the calculation with TV regularization, it is important to set the parameter in the Settings Window~\ref{sec:settingWindow} 
 (the entry for the axial separation has no influence on this method).
@@ -60,16 +90,3 @@ After setting the parameters, the reconstruction can be executed by clicking the
          :width: 300
      - .. image:: _img/tv_button.png
          :width: 300
-
-         
-.. .. image:: _img/TV_parameters.png
-..     :width: 500
-..     :align: center
-
-
-.. .. image:: _img/tv_button.png
-..     :width: 500
-..     :align: center
-    
-
-
