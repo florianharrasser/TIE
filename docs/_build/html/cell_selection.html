@@ -178,7 +178,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -245,7 +245,7 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
@@ -253,35 +253,54 @@
         <article role="main" id="furo-main-content">
           <section id="cell-selection">
 <h1>Cell Selection<a class="headerlink" href="#cell-selection" title="Link to this heading">¶</a></h1>
-<p>In this step, it gets described how a cell can be select for further calculations.</p>
-<p>(The here ongoing process is shown in the top right corner of the main window)</p>
+<p><em>This step explains how to select a cell for further calculations.</em></p>
+<p><em>(The current step is shown in the top right corner of the main window)</em></p>
 <hr class="docutils" />
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>For further calculations, selecting the cell as closely as possible is important. This step is very sensitive to the calculations
-and has to be done carefully.</p>
+<p>Selecting the cell as accurately as possible is critical for correct calculations. This step is highly sensitive and must be done carefully.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>In this view a not in focus image is displayed. This is done to make the cells more visible. The software uses the in focus
-image for the calculations.</p>
+<p>The displayed image in this view is intentionally <strong>not</strong> in focus. This helps make the cells more visible. However, the software uses
+the <strong>in-focus</strong> version of the image for all calculations.</p>
 </div>
-<p>Three different views can be selected:</p>
+<section id="available-views">
+<h2>Available views<a class="headerlink" href="#available-views" title="Link to this heading">¶</a></h2>
+<p>You can choose between three different views to help with cell selection:</p>
 <ul class="simple">
-<li><p><strong>Background Image:</strong> Background</p></li>
-<li><p><strong>Image:</strong> Sample Image</p></li>
-<li><p><strong>Stack Image:</strong>  Sample image divided through the background image</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Background</span> <span class="pre">Image:</span></code> Displays <strong>only</strong> the background</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Image:</span></code> Displays the original sample image</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Stack</span> <span class="pre">Image:</span></code> Displays the sample image divided through the background image</p></li>
 </ul>
-<p>A usefull view is the <strong>Stack Image</strong>, where it can be controlled if the satack calculation (wich is later used) has no
-initial artifacts.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">Stack</span> <span class="pre">Image</span></code> is particularly helpful to check for any artifacts that might affect the stack calculation later on.</p>
+</section>
 <hr class="docutils" />
-<p>Click on the image to display a red square, shown in Figure~ref{fig:cell-selection}. This square must be used to select the cell
-as precisely as possible. There must be no other cells or artifacts at the edges of the red square. Otherwise, the phase reconstruction
-will not work. Ensure there is also no cell in the background within the selected part. The stack view is useful for this.</p>
-<p>To delete the selected part or draw a new one, click out of the red box and draw a new area.</p>
-<p>If you change the view, the selected part is deleted.</p>
-<a class="reference internal image-reference" href="_images/selection_selectpart.png"><img alt="_images/selection_selectpart.png" class="align-center" src="_images/selection_selectpart.png" style="width: 500px;" />
+<section id="selecting-the-cell">
+<h2>Selecting the Cell<a class="headerlink" href="#selecting-the-cell" title="Link to this heading">¶</a></h2>
+<dl class="simple">
+<dt>To properly select the cell (and optionally crop the image for better visibility during calculations), you must manually draw a selection:</dt><dd><ol class="arabic simple">
+<li><p>Click on the image to start drawing</p></li>
+<li><p>Drag the mouse to create a rectangle around the target cell</p></li>
+<li><p>Release the mouse button to finalize the selection</p></li>
+</ol>
+</dd>
+</dl>
+<a class="reference internal image-reference" href="_images/selection_select_part.png"><img alt="_images/selection_select_part.png" class="align-center" src="_images/selection_select_part.png" style="width: 500px;" />
 </a>
+<p>Ensure that:</p>
+<ul class="simple">
+<li><p>The selected red square encloses only the target cell as precisely as possible.</p></li>
+<li><p>Avoid including other cells or artifacts near the edges of the rectangle.</p></li>
+<li><p>No other cell should appear in the background of the selected area.</p></li>
+</ul>
+<p>Using the <code class="docutils literal notranslate"><span class="pre">Stack</span> <span class="pre">Image</span></code> view can help verify that the selected region is clean and suitable for further processing.</p>
+<p>To delete or re-draw the selection, simply click outside the current red box and draw a new area.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Changing the view will automatically remove the current selection.</p>
+</div>
+</section>
 </section>
 
         </article>
@@ -327,8 +346,28 @@ will not work. Ensure there is also no cell in the background within the selecte
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Cell Selection</a><ul>
+<li><a class="reference internal" href="#available-views">Available views</a></li>
+<li><a class="reference internal" href="#selecting-the-cell">Selecting the Cell</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>
