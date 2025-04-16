@@ -1,9 +1,8 @@
 Selecting Focused Image
 =========================
 
-*Here the selection of the focused image is described. *
-
-************************************************************
+*Here the selection of the focused image is described. This image is used for further calulcation.*
+******************************************************************************************************************
 
 Once the files have been uploaded successfully, the index of the focused image is calculated automatically. This index is displayed in the ``mainwindow``
 as shown in the figure below (highlighted in red).  To verify whether the calculated index is correct, click the 
@@ -24,3 +23,6 @@ To set a specific image as the focused one, select it and then click the ``Choos
 .. image:: _img/select_focused_image.png
     :width: 500
     :align: center
+
+.. note::
+    When changing the focused image, the index is updated in the main window. 

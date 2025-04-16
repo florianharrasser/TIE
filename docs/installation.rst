@@ -3,7 +3,7 @@ Installation
 
 *Follow the instructions below to install the software on your system.*
 
-*The software is compatible with Windows. *
+*The software is compatible with Windows.*
 
 *********************************************************************
 

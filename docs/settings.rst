@@ -9,24 +9,26 @@ Settings
 
 The ``Settings`` window is the first step in the calculation process. It allows you to set the parameters for:
 
-- the calculation of the cell dry mass 
 - the settings used during the image aquisition.
+- the calculation of the cell dry mass 
 
-Although the window opens automatically after a successful file upload, it can also be opened manually by clicking the ``Settings`` button 
-in the toolbar.
 
-To perform calculations, two images are required: a background image and a sample image. The background image is used to remove the light 
+.. note:: 
+  Although the window opens automatically after a successful file upload, it can also be opened manually by clicking the ``Settings`` button 
+  in the toolbar.
+
+To perform calculations, two images are required: a **background image** and a **sample image**. The background image is used to remove the light 
 characteristics from the sample image.
-This step is essential, as it reduces artifacts in the phase reconstruction. Without it, the calculation will not produce correct results.
+This step is essential, as it reduces artifacts in the phase reconstruction. Without it, the calculation will not produce reliable results.
 
 *******************************************************************************************************************
 
 There is a slight difference in the upload process depending on the file type. (The workflow is the same for ``.tif`` and ``.stk`` files)
-More detailes are provided in section :ref:`ref_settings_lif` and :ref:`ref_settings_tif`.
+More detailes are provided in the sections below :ref:`ref_settings_lif` and :ref:`ref_settings_tif`.
 
 ******************************************************************************************************************
 
-he first step is to configure the parameters for the calculation. These parameters are the same for all supported file types
+The first step is the configuration of the parameters for the calculation. These parameters are the same for all supported file types
 and must all be filled out:
 
 - **Magnification** is the microscope magnification used during image aquisition
@@ -50,6 +52,11 @@ and must all be filled out:
 After setting all the parameters and choosing the files like explained in section :ref:`ref_settings_lif` and section :ref:`ref_settings_tif`, 
 the button ``Continue`` can be clicked for the next steps in the calculation process.
 
+.. note:: 
+  The settings are only saved in the database after clicking the ``Continue`` button. If the user closes the window before clicking this button,
+  the settings will be lost.
+
+
 
 
 .. _ref_settings_lif:
@@ -59,7 +66,7 @@ Settings - ``.lif`` Files
 
 When using a ``.lif`` file, the background and sample images must be saved in the same file. It is possible that the file contains
 multiple measurements. The selection is done via the drop-down menu by clicking on the ``v`` sign next to the file name. 
-The sample and background image must be selected according to their respective field names. Otherwise a negative mass will be calculated.
+The sample and background image must be selected according to their respective field names.
 
 
 .. list-table::
@@ -75,10 +82,10 @@ The sample and background image must be selected according to their respective f
 
 Settings - ``.tif`` / ``.stk`` Files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-When using a ``tif`` or ``stk`` file, the background and sample images must be provided as two separate files.
-When reaching this step, the sample image is already uplaoded, here it is only neccesary to upload the background image additionally.(However, 
+When using a ``.tif`` or ``.stk`` file, the background and sample images must be provided as two separate files.
+When reaching this step, the sample image is already uplaoded, here it is only neccesary to upload the background image additionally. (However, 
 the sample file can still be changed here if something went wrong during the upload process). To upload either a sample or background file, 
-click the the ``upload sample file`` or ``upload background image`` button. 
+click the the ``Upload Sample`` or ``Upload Background`` button. 
 
 .. note:: 
   It is possible to mix the file types, i.e. a ``.tif`` file can be used as a sample image and a ``.stk`` file as a background image.

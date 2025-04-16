@@ -256,19 +256,22 @@
 <hr class="docutils" />
 <p>The <code class="docutils literal notranslate"><span class="pre">Settings</span></code> window is the first step in the calculation process. It allows you to set the parameters for:</p>
 <ul class="simple">
-<li><p>the calculation of the cell dry mass</p></li>
 <li><p>the settings used during the image aquisition.</p></li>
+<li><p>the calculation of the cell dry mass</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>Although the window opens automatically after a successful file upload, it can also be opened manually by clicking the <code class="docutils literal notranslate"><span class="pre">Settings</span></code> button
 in the toolbar.</p>
-<p>To perform calculations, two images are required: a background image and a sample image. The background image is used to remove the light
+</div>
+<p>To perform calculations, two images are required: a <strong>background image</strong> and a <strong>sample image</strong>. The background image is used to remove the light
 characteristics from the sample image.
-This step is essential, as it reduces artifacts in the phase reconstruction. Without it, the calculation will not produce correct results.</p>
+This step is essential, as it reduces artifacts in the phase reconstruction. Without it, the calculation will not produce reliable results.</p>
 <hr class="docutils" />
 <p>There is a slight difference in the upload process depending on the file type. (The workflow is the same for <code class="docutils literal notranslate"><span class="pre">.tif</span></code> and <code class="docutils literal notranslate"><span class="pre">.stk</span></code> files)
-More detailes are provided in section <a class="reference internal" href="#ref-settings-lif"><span class="std std-ref">Settings - .lif Files</span></a> and <a class="reference internal" href="#ref-settings-tif"><span class="std std-ref">Settings - .tif / .stk Files</span></a>.</p>
+More detailes are provided in the sections below <a class="reference internal" href="#ref-settings-lif"><span class="std std-ref">Settings - .lif Files</span></a> and <a class="reference internal" href="#ref-settings-tif"><span class="std std-ref">Settings - .tif / .stk Files</span></a>.</p>
 <hr class="docutils" />
-<p>he first step is to configure the parameters for the calculation. These parameters are the same for all supported file types
+<p>The first step is the configuration of the parameters for the calculation. These parameters are the same for all supported file types
 and must all be filled out:</p>
 <ul class="simple">
 <li><p><strong>Magnification</strong> is the microscope magnification used during image aquisition</p></li>
@@ -285,11 +288,16 @@ in a bad phase reconstruction. A high number of iterations does not change the d
 </ul>
 <p>After setting all the parameters and choosing the files like explained in section <a class="reference internal" href="#ref-settings-lif"><span class="std std-ref">Settings - .lif Files</span></a> and section <a class="reference internal" href="#ref-settings-tif"><span class="std std-ref">Settings - .tif / .stk Files</span></a>,
 the button <code class="docutils literal notranslate"><span class="pre">Continue</span></code> can be clicked for the next steps in the calculation process.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The settings are only saved in the database after clicking the <code class="docutils literal notranslate"><span class="pre">Continue</span></code> button. If the user closes the window before clicking this button,
+the settings will be lost.</p>
+</div>
 <section id="settings-lif-files">
 <span id="ref-settings-lif"></span><h2>Settings - <code class="docutils literal notranslate"><span class="pre">.lif</span></code> Files<a class="headerlink" href="#settings-lif-files" title="Link to this heading">¶</a></h2>
 <p>When using a <code class="docutils literal notranslate"><span class="pre">.lif</span></code> file, the background and sample images must be saved in the same file. It is possible that the file contains
 multiple measurements. The selection is done via the drop-down menu by clicking on the <code class="docutils literal notranslate"><span class="pre">v</span></code> sign next to the file name.
-The sample and background image must be selected according to their respective field names. Otherwise a negative mass will be calculated.</p>
+The sample and background image must be selected according to their respective field names.</p>
 <div class="table-wrapper colwidths-given docutils container">
 <table class="docutils align-center">
 <colgroup>
@@ -308,10 +316,10 @@ The sample and background image must be selected according to their respective f
 </section>
 <section id="settings-tif-stk-files">
 <span id="ref-settings-tif"></span><h2>Settings - <code class="docutils literal notranslate"><span class="pre">.tif</span></code> / <code class="docutils literal notranslate"><span class="pre">.stk</span></code> Files<a class="headerlink" href="#settings-tif-stk-files" title="Link to this heading">¶</a></h2>
-<p>When using a <code class="docutils literal notranslate"><span class="pre">tif</span></code> or <code class="docutils literal notranslate"><span class="pre">stk</span></code> file, the background and sample images must be provided as two separate files.
-When reaching this step, the sample image is already uplaoded, here it is only neccesary to upload the background image additionally.(However,
+<p>When using a <code class="docutils literal notranslate"><span class="pre">.tif</span></code> or <code class="docutils literal notranslate"><span class="pre">.stk</span></code> file, the background and sample images must be provided as two separate files.
+When reaching this step, the sample image is already uplaoded, here it is only neccesary to upload the background image additionally. (However,
 the sample file can still be changed here if something went wrong during the upload process). To upload either a sample or background file,
-click the the <code class="docutils literal notranslate"><span class="pre">upload</span> <span class="pre">sample</span> <span class="pre">file</span></code> or <code class="docutils literal notranslate"><span class="pre">upload</span> <span class="pre">background</span> <span class="pre">image</span></code> button.</p>
+click the the <code class="docutils literal notranslate"><span class="pre">Upload</span> <span class="pre">Sample</span></code> or <code class="docutils literal notranslate"><span class="pre">Upload</span> <span class="pre">Background</span></code> button.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>It is possible to mix the file types, i.e. a <code class="docutils literal notranslate"><span class="pre">.tif</span></code> file can be used as a sample image and a <code class="docutils literal notranslate"><span class="pre">.stk</span></code> file as a background image.</p>

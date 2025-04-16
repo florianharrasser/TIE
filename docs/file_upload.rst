@@ -21,6 +21,7 @@ To upload one of these files, click the ``Upload file`` button in the toolbar, w
 At the bottom right corner, you need to choose a filter for the file type you want to upload. 
 When the upload is successful, you will be redirected to the :ref:`ref_settings` page.
 
-.. note::
+.. warning::
     If you **can not see the desired file** in the file dialog, check the filter at the bottom right corner of the upload dialog.
+    If this fileter is set wrong, the file will not be visible in the file dialog. 
 
