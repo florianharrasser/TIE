@@ -4,7 +4,7 @@ Dry Mass Calculation
 =========================
 
 *This chapter explains how to calculate the dry mass of a cell. 
-There are different methods available for this calculation, which are described in the following sections.*
+There are different methods available for this calculation, which are described in the following section.*
 
 *************************************************************************************************************
 

@@ -2,6 +2,7 @@ Selecting Focused Image
 =========================
 
 *Here the selection of the focused image is described. This image is used for further calulcation.*
+
 ******************************************************************************************************************
 
 Once the files have been uploaded successfully, the index of the focused image is calculated automatically. This index is displayed in the ``mainwindow``

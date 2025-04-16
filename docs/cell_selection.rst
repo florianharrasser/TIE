@@ -26,7 +26,10 @@ You can choose between three different views to help with cell selection:
 - ``Image:`` Displays the original sample image
 - ``Stack Image:`` Displays the sample image divided through the background image
 
-The ``Stack Image`` is particularly helpful to check for any artifacts that might affect the stack calculation later on.
+The ``Stack Image`` is particularly helpful to check for any artifacts that might affect the stack calculation later on, because
+this view shows the image which is used for the calculation. (Just an not in focus version of it). 
+With the background view it is possible to check if the background image is correct and does not introduce any artifacts
+when dividing the sample image through it.
 
 *******************************************************************************************************************************
 
@@ -43,7 +46,7 @@ To properly select the cell (and optionally crop the image for better visibility
     :align: center
 
 
-Ensure that:
+**Ensure that:**
 
 - The selected red square encloses only the target cell as precisely as possible.
 - Avoid including other cells or artifacts near the edges of the rectangle.
