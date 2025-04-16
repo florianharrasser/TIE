@@ -1,0 +1,3 @@
+Dry Mass Calculation
+=========================
+Dry mass is the mass of a substance without any water content. It is an important parameter in various fields such as food science, agriculture, and material science. The dry mass can be calculated using the following formula:

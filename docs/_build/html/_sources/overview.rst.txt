@@ -1,0 +1,3 @@
+Overview
+========
+This is a simple example of a Sphinx documentation project. It includes a basic structure with an index page and a few other pages to demonstrate how to create documentation using Sphinx.
