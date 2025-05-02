@@ -267,6 +267,9 @@ class StatisticWindow(QWidget):
             clean_filename=file_name.replace('/', '_').replace(' ', '_')
 
             calc.calculate_opl_fft(statistics=True)   
+            calc.opl_dry_mass()
+            calc.contour_mass()
+            calc.contourline_mean_mass()
             self.save_mass_contour_images(clean_filename)   
 
             # Saving the calculated data            
@@ -284,7 +287,10 @@ class StatisticWindow(QWidget):
                 file_name=file.filename+'_'+'TvNorm'+'_'+str(file.lbda_TV)+'_'+str(file.iteration)+'_'+str(file.cell_index)+'_'+str(file.dx1)+'_'+str(file.dx2)+'_'+str(file.dy1)+'_'+str(file.dy2)             
                 clean_filename=file_name.replace('/', '_').replace(' ', '_')                
         
-                calc.calculate_opl_tv(True)                
+                calc.calculate_opl_tv(True)             
+                calc.opl_dry_mass()
+                calc.contour_mass()
+                calc.contourline_mean_mass()   
                 self.save_mass_contour_images(clean_filename)                
 
                 # Saving the calculated data                
@@ -414,6 +420,7 @@ class StatisticWindow(QWidget):
         with open(csv_path, 'w') as files:
             csv_writer = csv.writer(files)
             file.write_csv(csv_writer)
+            print('Csv file: ', file.contour_inside_mass)
 
     def save_metadata(self):
         path=self.directory_path
@@ -447,7 +454,7 @@ class StatisticWindow(QWidget):
             shift_aktiv=(self.do_x2.isChecked() or self.do_x1.isChecked() or self.do_y1.isChecked() or self.do_y2.isChecked())
 
             if not shift_aktiv:            
-                title=f'Mass {file.calculation_option}: {np.round(file.entire_mass,3)}'
+                title=f'Mass {file.calculation_option}: {np.round(file.contour_inside_mass,3)}'
                 mc2=MplCanvas(self, width=5, height=4, dpi=100)
                 mc2.draw_selected_contour_with_colorbar(title, True, True)
                 
@@ -483,7 +490,10 @@ class StatisticWindow(QWidget):
             file_name=file.filename+'_'+'US'+'_'+str(file.axial_separation)+'_'+str(file.cell_index)+'_'+str(file.dx1)+'_'+str(file.dx2)+'_'+str(file.dy1)+'_'+str(file.dy2)
             clean_filename=file_name.replace('/', '_').replace(' ', '_')
 
-            calc.calculate_opl_US_method(True)   
+            calc.calculate_opl_US_method(True)
+            calc.opl_dry_mass()
+            calc.contour_mass()
+            calc.contourline_mean_mass()   
             self.save_mass_contour_images(clean_filename)   
 
             # Saving the calculated data            
@@ -502,7 +512,10 @@ class StatisticWindow(QWidget):
         file_name=file.filename+'_'+'MX'+'_'+str(file.axial_separation)+'_'+str(file.axial_separation_high)+'_'+str(file.cell_index)+'_'+str(file.dx1)+'_'+str(file.dx2)+'_'+str(file.dy1)+'_'+str(file.dy2)
         clean_filename=file_name.replace('/', '_').replace(' ', '_')
 
-        calc.mixing(statistic=True)   
+        calc.mixing(statistic=True)
+        calc.opl_dry_mass()
+        calc.contour_mass()
+        calc.contourline_mean_mass()      
         self.save_mass_contour_images(clean_filename)   
 
         # Saving the calculated data            
