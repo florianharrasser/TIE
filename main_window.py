@@ -411,7 +411,7 @@ class Main(QMainWindow):
     #dialog for uploading files
     def open_dialog(self):
         try:   
-            path, _ = QFileDialog.getOpenFileName(self, "Open File", "", "LIF Files (*.lif);;TIF Files (*.tif);;STK Files (*.stk)")
+            path, _ = QFileDialog.getOpenFileName(self, "Open File", "", "TIF Files (*.tif);;LIF Files (*.lif);;STK Files (*.stk)")
 
             if path:
                 file.reset()
@@ -527,7 +527,8 @@ class Main(QMainWindow):
 
     #shows backgroundimage in mc1
     def show_background(self):
-        self.init_mc1(lambda: self.mc1.show_image('Background Idx 1', file.background[1]))
+        self.init_mc1(lambda: self.mc1.show_image('Background Idx 1', file.background))
+        # self.init_mc1(lambda: self.mc1.show_image('Background Idx 1', file.background[1]))
         self.mc1.with_selector()
 
     #shows sample image in mc1    
@@ -671,7 +672,7 @@ class Main(QMainWindow):
             calc.contourline_mean_mass()
 
             self.set_labels()
-            title='Dry Mass in ng: '+str(round(file.contour_inside_mass-file.contourline_mean_mass,3))
+            title='Dry Mass in ng: '+str(round(file.contour_inside_mass,3))
             self.init_mc2(lambda: self.mc2.draw_selected_contour_with_colorbar(title, True))
 
         except Exception as e:
