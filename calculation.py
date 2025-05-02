@@ -264,7 +264,7 @@ def contour_mass():
     file.outside_min_mass=np.min(mass_outside)
     file.outside_std=np.std(mass_outside)
     file.outside_mean_mass=np.mean(mass_outside)
-    file.contour_inside_mass=np.round((mass_inside/file.alpha)*file.pixel_size**2, 5)
+    file.contour_inside_mass=np.round((mass_inside/file.alpha)*file.pixel_size**2, 10)
 
 def contourline_mean_mass():
     contourline_mass=0
