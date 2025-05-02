@@ -10,6 +10,7 @@ from state import FileFormat
 import numpy as np
 import multipagetiff as mtif
 import tifffile as tiff 
+import traceback
 
 
 class SettingWindow(QWidget):
@@ -160,7 +161,7 @@ class SettingWindow(QWidget):
                 else:
                     file.idx_background=0
                     file.idx_sample=0
-                    file.filename=str(file.name)
+                    file.filename=str(file.name[0])+'_'+str(file.name[1])
 
                 file.magnification = float(self.txt_magnification.text())
                 file.pixel_size = float(self.txt_pixel_size.text())*1e-9
@@ -187,6 +188,7 @@ class SettingWindow(QWidget):
             self.close()
 
         except Exception:
+            traceback.print_exc()
             QMessageBox.critical(self, "Error!", 'Invalid Input: Please check the Index for Sample and Background!', buttons=QMessageBox.StandardButton.Close,)
 
     #Checks if settings for background&sample calculations cahanged
