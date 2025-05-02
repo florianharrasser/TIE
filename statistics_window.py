@@ -420,7 +420,6 @@ class StatisticWindow(QWidget):
         with open(csv_path, 'w') as files:
             csv_writer = csv.writer(files)
             file.write_csv(csv_writer)
-            print('Csv file: ', file.contour_inside_mass)
 
     def save_metadata(self):
         path=self.directory_path
