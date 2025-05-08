@@ -1,12 +1,13 @@
+import numpy as np
+import csv
+import os
 import matplotlib
 matplotlib.use('QtAgg')
 from PyQt6.QtWidgets import (
     QPushButton, QWidget, QGridLayout, QFileDialog, QMessageBox, QLabel
     )
 from  MplCanvas import MplCanvas
-import numpy as np
-import csv
-import os
+
 
 
 class EvaluationWindow(QWidget):

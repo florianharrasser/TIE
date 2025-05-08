@@ -30,6 +30,7 @@ class Daten():
         self.idx_focused_image:int=-1
         self.idx_focused_image_calc=-1
         self.axial_separation:int=1 #Index for calculating the axial distance for opd calculations
+        self.mixing_high:bool=False 
 
         """Parameters for selecting the right part for calculations"""
         self.idx_background=0

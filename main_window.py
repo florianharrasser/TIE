@@ -1,11 +1,9 @@
 import sys
 import csv
-from daten import file
-from setting_window import SettingWindow
-from statistics_window import StatisticWindow
-from select_window import SelectWindow
-from evaluation_window import EvaluationWindow
+import numpy as np
+import tifffile as tif
 import calculation as calc
+
 from readlif.reader import LifFile
 import matplotlib
 matplotlib.use('QtAgg')
@@ -13,15 +11,19 @@ from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QPushButton, QWidget, QFileDialog,
     QLabel, QGridLayout, QToolBar, QLineEdit, QSlider, QMessageBox, QFrame
     )
+from MplCanvas import MplCanvas
 from PyQt6.QtGui import QAction
-from  MplCanvas import MplCanvas
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIntValidator
 from state import State, FileFormat
-import numpy as np
-import multipagetiff as mtif
-import tifffile as tif
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+from daten import file
+from setting_window import SettingWindow
+from statistics_window import StatisticWindow
+from select_window import SelectWindow
+from evaluation_window import EvaluationWindow
+import contour_utils as cont_utils
+import mass_utils
 
 
 class Main(QMainWindow):
@@ -463,19 +465,16 @@ class Main(QMainWindow):
 
     #loading the .tif-file with corresponding data
     def initialize_tif_file(self, path):
-        file.file_format=FileFormat.TIF
-
         file.file=[[],[]]
         file.name=[[],[]]
 
         if path:
-            sample_stack=tif.imread(path)
-            # sample_stack=mtif.read_stack(path)
-            file.sample=np.asarray([slice for slice in sample_stack])
+            file.sample=tif.imread(path)
             file.file[0]=file.sample
             file.name[0]= self.extract_filename(path)
 
         file.name[1]="Please Upload a Background Image!"
+        file.file_format=FileFormat.TIF
 
     #loading the .lif-file with corresponding data
     def initialize_lif_file(self, path):
@@ -566,7 +565,7 @@ class Main(QMainWindow):
 
             # calculation of opl and dry mass
             calculation_option()
-            calc.opl_dry_mass()
+            mass_utils.opl_dry_mass()
 
             # display drymass and contours with default values
             self.contour_detection()  
@@ -597,7 +596,7 @@ class Main(QMainWindow):
         self.lbl_inflate.setText("Inflate Contour: " + str(self.sld_inflate_contour.value()/100))
 
         # searching for contours
-        calc.contour_detection()
+        cont_utils.contour_detection()
         self.sld_find_contour_index.setMaximum(len(file.hierarchy)-1)
         self.draw_contour()
 
@@ -667,9 +666,9 @@ class Main(QMainWindow):
                 self.btn_draw_contour_yourself.setText("Draw Contour Manually")
                 self.btn_draw_contour_yourself.setAccessibleName("draw_status")
             self.btn_statistics.setEnabled(True)
-            calc.select_contour()
-            calc.contour_mass()
-            calc.contourline_mean_mass()
+            cont_utils.select_contour()
+            mass_utils.contour_mass()
+            mass_utils.contourline_mean_mass()
 
             self.set_labels()
             title='Dry Mass in ng: '+str(round(file.contour_inside_mass,3))
@@ -685,13 +684,13 @@ class Main(QMainWindow):
         self.lbl_inflate.setText("Inflate Contour: "+str(self.sld_inflate_contour.value()/100))
         self.txt_inflate_contour.setText(str(file.inflatefactor))
 
-        calc.scale_contour()
+        cont_utils.scale_contour()
         
         self.init_mc2(lambda: self.mc2.draw_inflated_contour_with_colorbar( 'To get the Mass hit \'Calculate Contour Mass\'', True))
         self.init_mc3(lambda: self.mc3.draw_inflated_contour('Selected Part', True))
 
     def store_contour(self):
-        calc.select_contour()
+        cont_utils.select_contour()
         self.btn_recall_contour.setEnabled(True)
         file.stored_contour=file.selected_contour
         self.btn_recall_contour.setAccessibleName("_stored")
@@ -704,7 +703,7 @@ class Main(QMainWindow):
             self.toggle_contour_threshold(False)
             self.toggle_inflate_contour(False)
             file.state=State.STORED
-            calc.select_contour()
+            cont_utils.select_contour()
             self.init_mc2(lambda: self.mc2.draw_selected_contour_with_colorbar('To get the Mass hit \'Calculate Contour Mass\'', contour_bool=True) )
             self.init_mc3(lambda: self.mc3.draw_stored_contour('Selected Part', True))
             self.btn_recall_contour.setText("Hide Stored Contour")

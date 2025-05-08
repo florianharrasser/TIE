@@ -11,7 +11,7 @@ import numpy as np
 import multipagetiff as mtif
 import tifffile as tiff 
 import traceback
-
+import image_processing as img_proc
 
 class SettingWindow(QWidget):
     def __init__(self, main_window):
@@ -140,9 +140,7 @@ class SettingWindow(QWidget):
         path, _ = QFileDialog.getOpenFileName(self, "Open File", "", "TIF Files (*.tif);; STK Files (*.stk)")
 
         if path:
-            # bgd_stack=mtif.read_stack(path)
-            bgd_stack=tiff.imread(path)
-            file.background=np.asarray([slice for slice in bgd_stack])
+            file.background=tiff.imread(path) #np.asarray([slice for slice in bgd_stack])
             file.file[1]=file.background
             file.name[1]= self.main_window.extract_filename(path)
             self.lbl_background.setText(file.name[1])
@@ -172,8 +170,8 @@ class SettingWindow(QWidget):
                 
 
                 if idx_changed:
-                    calc.calculate_background_sample_stack()
-                    calc.find_focused_image(file)
+                    img_proc.calculate_background_sample_stack()
+                    img_proc.find_focused_image(file)
                     self.main_window.btn_statistics.setDisabled(True)
 
                 # Setting Labels and enable buttons

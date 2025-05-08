@@ -11,6 +11,7 @@ import calculation as calc
 from PyQt6.QtGui import  QIntValidator
 from MplCanvas import MplCanvas
 import time
+import mass_utils
 
 
 class StatisticWindow(QWidget):
@@ -267,9 +268,9 @@ class StatisticWindow(QWidget):
             clean_filename=file_name.replace('/', '_').replace(' ', '_')
 
             calc.calculate_opl_fft(statistics=True)   
-            calc.opl_dry_mass()
-            calc.contour_mass()
-            calc.contourline_mean_mass()
+            mass_utils.opl_dry_mass()
+            mass_utils.contour_mass()
+            mass_utils.contourline_mean_mass()
             self.save_mass_contour_images(clean_filename)   
 
             # Saving the calculated data            
@@ -288,9 +289,9 @@ class StatisticWindow(QWidget):
                 clean_filename=file_name.replace('/', '_').replace(' ', '_')                
         
                 calc.calculate_opl_tv(True)             
-                calc.opl_dry_mass()
-                calc.contour_mass()
-                calc.contourline_mean_mass()   
+                mass_utils.opl_dry_mass()
+                mass_utils.contour_mass()
+                mass_utils.contourline_mean_mass()   
                 self.save_mass_contour_images(clean_filename)                
 
                 # Saving the calculated data                
@@ -449,7 +450,7 @@ class StatisticWindow(QWidget):
             csv_writer.writerow([filename_to_save])
 
     def save_mass_contour_images(self, filename):
-            calc.opl_dry_mass()
+            mass_utils.opl_dry_mass()
             shift_aktiv=(self.do_x2.isChecked() or self.do_x1.isChecked() or self.do_y1.isChecked() or self.do_y2.isChecked())
 
             if not shift_aktiv:            
@@ -458,8 +459,8 @@ class StatisticWindow(QWidget):
                 mc2.draw_selected_contour_with_colorbar(title, True, True)
                 
             else:
-                calc.contour_mass()
-                calc.contourline_mean_mass()
+                mass_utils.contour_mass()
+                mass_utils.contourline_mean_mass()
                 file.selected_contour_index=1
 
                 title=f'Mass {file.calculation_option} in ng: {round(file.contour_inside_mass-file.contourline_mean_mass,3)}'
@@ -490,9 +491,9 @@ class StatisticWindow(QWidget):
             clean_filename=file_name.replace('/', '_').replace(' ', '_')
 
             calc.calculate_opl_US_method(True)
-            calc.opl_dry_mass()
-            calc.contour_mass()
-            calc.contourline_mean_mass()   
+            mass_utils.opl_dry_mass()
+            mass_utils.contour_mass()
+            mass_utils.contourline_mean_mass()   
             self.save_mass_contour_images(clean_filename)   
 
             # Saving the calculated data            
@@ -512,9 +513,9 @@ class StatisticWindow(QWidget):
         clean_filename=file_name.replace('/', '_').replace(' ', '_')
 
         calc.mixing(statistic=True)
-        calc.opl_dry_mass()
-        calc.contour_mass()
-        calc.contourline_mean_mass()      
+        mass_utils.opl_dry_mass()
+        mass_utils.contour_mass()
+        mass_utils.contourline_mean_mass()      
         self.save_mass_contour_images(clean_filename)   
 
         # Saving the calculated data            

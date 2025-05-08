@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import cv2
 from matplotlib_scalebar.scalebar import ScaleBar
 from daten import file
-import calculation as calc
+import contour_utils as cont_utils
 
 
 class MplCanvas(FigureCanvasQTAgg):
@@ -43,7 +43,7 @@ class MplCanvas(FigureCanvasQTAgg):
     def on_release(self, event):
         if event.button==1:
             self.drawing=False
-            calc.select_contour()
+            cont_utils.select_contour()
             self.draw_selected_contour_with_colorbar('To get the Mass hit \'Calculate Contour Mass\'', True, enable_colorbar=False)        
                  
     def on_press(self, event):
